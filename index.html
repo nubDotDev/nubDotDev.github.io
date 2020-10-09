@@ -7,25 +7,27 @@
 </head>
 <body>
   <p>Welcome to the maze generator!</p>
-  <select name="algorithm" id="algorithm">
+  <select name="algorithm" id="algorithm" onclick="algorithmClick()">
     <option value="defaultAlgorithm">--Algorithm--</option>
     <option value="aldousBroder">Aldous Broder</option>
     <option value="eller">Eller</option>
     <option value="kruskal">Kruskal</option>
     <option value="prim">Prim</option>
-    <option value="recursiveBacktracking">Recursive Backtracking</option>
+    <option value="recursiveBacktracker">Recursive Backtracker</option>
     <option value="recursiveDivision">Recursive Division</option>
     <option value="wilson">Wilson</option>
   </select>
   <select name="shape" id="shape">
     <option value="defaultShape">--Shape--</option>
-    <option value="delta">Delta</option>
-    <option value="orthogonal">Orthogonal</option>
-    <option value="sigma">Sigma</option>
-    <option value="upsilon">Upsilon</option>
+    <option value="delta">Delta (Triangles)</option>
+    <option value="orthogonal">Orthogonal (Squares)</option>
+    <option value="sigma">Sigma (Hexagons)</option>
+    <option value="upsilon">Upsilon (Octogons + Squares)</option>
+    <option value="3d">3D (Cubes)</option>
   </select>
-  <input type="number" name="x" placeholder="X-Size (cells)" id="x">
-  <input type="number" name="y" placeholder="Y-Size (cells)" id="y">
+  <input type="number" name="x" placeholder="Width (cells)" id="x">
+  <input type="number" name="y" placeholder="Height (cells)" id="y" value=1>
+  <input type="number" name="z" placeholder="Length (cells)" id="z">
   <input type="number" name="sideLength" placeholder="Cell side length" id="sideLength">
   <input type="number" name="thickness" placeholder="Line thickness" id="thickness">
   <input type="button" name="generate" value="Generate" onclick="generate()" id="generate">

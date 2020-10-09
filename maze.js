@@ -1,12 +1,14 @@
 const SQRT3 = Math.sqrt(3);
 
-var xSize, ySize, sideLength, thickness, cellShape, algorithm, canvas, context;
+var xSize, ySize, zSize, sideLength, thickness, cellShape, algorithm, canvas, context;
 
-function Cell(x, y, wallCount) {
+function Cell(x, y, z, wallCount) {
   this.x = x;
   this.y = y;
-  this.wallCount = wallCount
-  this.walls = []
+  this.z = z;
+  this.wallCount = wallCount;
+  this.walls = [];
+
   for (i = 0; i < wallCount; i++) {
     this.walls[i] = false;
   }
@@ -22,10 +24,24 @@ function Cell(x, y, wallCount) {
   this.getWallByDirection = function (direction) {
     return direction;
   }
+
+  this.draw = function (drawData) {
+    var [centerX, centerY, angle] = drawData;
+    var radius = sideLength / Math.sin(Math.PI / wallCount) / 2;
+    context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+    for (let i = 0; i < wallCount; i++) {
+      angle -= Math.PI * 2 / wallCount;
+      if (!this.walls[i]) {
+        context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+      } else {
+        context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+      }
+    }
+  }
 }
 
-function QuadCell(x, y) {
-  Cell.call(this, x, y, 4);
+function QuadCell(x, z) {
+  Cell.call(this, x, 0, z, 4);
 
   this.getTranslations = function () {
     return QuadCell.translations;
@@ -33,14 +49,14 @@ function QuadCell(x, y) {
 }
 
 QuadCell.translations = {
-  0: [1, 0],
-  1: [0, 1],
-  2: [-1, 0],
-  3: [0, -1]
+  0: [1, 0, 0],
+  1: [0, 0, 1],
+  2: [-1, 0, 0],
+  3: [0, 0, -1]
 }
 
-function BottomHexCell(x, y) {
-  Cell.call(this, x, y, 6);
+function BottomHexCell(x, z) {
+  Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
     return BottomHexCell.translations;
@@ -48,16 +64,16 @@ function BottomHexCell(x, y) {
 }
 
 BottomHexCell.translations = {
-  0: [1, 1],
-  1: [0, 1],
-  2: [-1, 1],
-  3: [-1, 0],
-  4: [0, -1],
-  5: [1, 0]
+  0: [1, 0, 1],
+  1: [0, 0, 1],
+  2: [-1, 0, 1],
+  3: [-1, 0, 0],
+  4: [0, 0, -1],
+  5: [1, 0, 0]
 }
 
-function TopHexCell(x, y) {
-  Cell.call(this, x, y, 6);
+function TopHexCell(x, z) {
+  Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
     return TopHexCell.translations;
@@ -65,20 +81,20 @@ function TopHexCell(x, y) {
 }
 
 TopHexCell.translations = {
-  0: [1, 0],
-  1: [0, 1],
-  2: [-1, 0],
-  3: [-1, -1],
-  4: [0, -1],
-  5: [1, -1]
+  0: [1, 0, 0],
+  1: [0, 0, 1],
+  2: [-1, 0, 0],
+  3: [-1, 0, -1],
+  4: [0, 0, -1],
+  5: [1, 0, -1]
 }
 
 function getTriOpposite(direction) {
   return -1 * (parseInt(direction) - 1) + 1;
 }
 
-function UpwardTriCell(x, y) {
-  Cell.call(this, x, y, 3);
+function UpwardTriCell(x, z) {
+  Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
     return UpwardTriCell.translations;
@@ -88,13 +104,13 @@ function UpwardTriCell(x, y) {
 }
 
 UpwardTriCell.translations = {
-  0: [1, 0],
-  1: [0, 1],
-  2: [-1, 0]
+  0: [1, 0, 0],
+  1: [0, 0, 1],
+  2: [-1, 0, 0]
 }
 
-function DownwardTriCell(x, y) {
-  Cell.call(this, x, y, 3);
+function DownwardTriCell(x, z) {
+  Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
     return DownwardTriCell.translations;
@@ -115,13 +131,13 @@ function DownwardTriCell(x, y) {
 }
 
 DownwardTriCell.translations = {
-  0: [1, 0],
-  1: [0, -1],
-  2: [-1, 0]
+  0: [1, 0, 0],
+  1: [0, 0, -1],
+  2: [-1, 0, 0]
 }
 
-function OctCell(x, y) {
-  Cell.call(this, x, y, 8);
+function OctCell(x, z) {
+  Cell.call(this, x, 0, z, 8);
 
   this.getTranslations = function () {
     return OctCell.translations;
@@ -144,14 +160,72 @@ function OctCell(x, y) {
 }
 
 OctCell.translations = {
-  0: [1, 0],
-  1: [0, 1],
-  2: [-1, 0],
-  3: [0, -1],
-  4: [1, 1],
-  5: [-1, 1],
-  6: [-1, -1],
-  7: [1, -1]
+  0: [1, 0, 0],
+  1: [0, 0, 1],
+  2: [-1, 0, 0],
+  3: [0, 0, -1],
+  4: [1, 0, 1],
+  5: [-1, 0, 1],
+  6: [-1, 0, -1],
+  7: [1, 0, -1]
+}
+
+function CubeCell(x, y, z) {
+  Cell.call(this, x, y, z, 6);
+
+  this.getTranslations = function () {
+    return CubeCell.translations;
+  }
+
+  this.getWallByDirection = function (direction) {
+    switch (direction) {
+      case 0:
+        return 0;
+      case 1:
+        return 4;
+      case 2:
+        return 1;
+      case 3:
+        return 2;
+      case 4:
+        return 5;
+      case 5:
+        return 3;
+    }
+  }
+
+  this.draw = function (drawData) {
+    var [centerX, centerY, angle] = drawData;
+    var radius = sideLength / Math.sin(Math.PI / 4) / 2;
+    context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+    for (let i = 0; i < 4; i++) {
+      angle -= Math.PI / 2;
+      if (!this.walls[i]) {
+        context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+      } else {
+        context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+      }
+    }
+    if (this.walls[4]) {
+      context.moveTo(centerX + sideLength * 3 / 8, centerY + sideLength / 8);
+      context.lineTo(centerX, centerY + sideLength * 3 / 8);
+      context.lineTo(centerX - sideLength * 3 / 8, centerY + sideLength / 8);
+    }
+    if (this.walls[5]) {
+      context.moveTo(centerX + sideLength * 3 / 8, centerY - sideLength / 8);
+      context.lineTo(centerX, centerY - sideLength * 3 / 8);
+      context.lineTo(centerX - sideLength * 3 / 8, centerY - sideLength / 8);
+    }
+  }
+}
+
+CubeCell.translations = {
+  0: [1, 0, 0],
+  1: [0, 1, 0],
+  2: [0, 0, 1],
+  3: [-1, 0, 0],
+  4: [0, -1, 0],
+  5: [0, 0, -1]
 }
 
 function DisjointSet() {
@@ -180,15 +254,17 @@ function DisjointSet() {
   }
 }
 
+function getNeighbor(cell, translation, grid) {
+  return grid[(cell.x + translation[0]) + "," + (cell.y + translation[1]) + "," + (cell.z + translation[2])];
+}
+
 function getNeighbors(cell, grid, visited) {
   var neighbors = []
   for (let [direction, translation] of Object.entries(cell.getTranslations())) {
-    try {
-      var neighbor = grid[(cell.x + translation[0]) + "," + (cell.y + translation[1])];
-      if (neighbor != null && (visited == null || !visited.has(neighbor))) {
-        neighbors.push([neighbor, direction]);
-      }
-    } catch (err) { }
+    var neighbor = getNeighbor(cell, translation, grid);
+    if (neighbor != null && (visited == null || !visited.has(neighbor))) {
+      neighbors.push([neighbor, direction]);
+    }
   }
   return neighbors;
 }
@@ -218,36 +294,30 @@ function eller(grid) {
 function kruskal(grid) {
   var disjointSet = new DisjointSet();
   var walls = [];
-  for (let i = 0; i < xSize; i++) {
-    for (let j = 0; j < ySize; j++) {
-      var cell = grid[i + "," + j];
-      disjointSet.addSet(cell);
-      for (let k of Object.keys(cell.getTranslations())) {
-        walls.push([cell, k]);
-      }
+  for (let cell of Object.values(grid)) {
+    disjointSet.addSet(cell);
+    for (let direction of Object.keys(cell.getTranslations())) {
+      walls.push([cell, direction]);
     }
   }
   while (walls.length > 0) {
     var random = Math.floor(Math.random() * walls.length);
     var [cell, direction] = walls[random];
-    var translation = cell.getTranslations()[direction];
     walls.splice(random, 1);
-    try {
-      var other = grid[(cell.x + translation[0]) + "," + (cell.y + translation[1])];
-      if (other != null) {
-        if (disjointSet.union(cell, other)) {
-          cell.walls[cell.getWallByDirection(direction)] = true;
-          other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
-        }
+    var other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+    if (other != null) {
+      if (disjointSet.union(cell, other)) {
+        cell.walls[cell.getWallByDirection(direction)] = true;
+        other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
       }
-    } catch (err) { }
+    }
   }
 }
 
 function prim(grid) {
 }
 
-function recursiveBacktracking(grid) {
+function recursiveBacktracker(grid) {
   var values = Object.values(grid);
   var current = values[Math.floor(Math.random() * values.length)];
   var visited = new Set();
@@ -273,25 +343,26 @@ function recursiveDivision(grid) {
 }
 
 function wilson(grid) {
-  /*
-  set of every cell not in maze
-  add one cell to maze
-  while set size > 0
-    pick random start
-    
-  */
-}
-
-function draw(cell, drawData) {
-  var [centerX, centerY, angle] = drawData;
-  var radius = sideLength / Math.sin(Math.PI / cell.wallCount) / 2;
-  context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-  for (let i = 0; i < cell.wallCount; i++) {
-    angle -= Math.PI * 2 / cell.wallCount;
-    if (!cell.walls[i]) {
-      context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    } else {
-      context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
+  var values = Object.values(grid);
+  var notMaze = new Set(values);
+  notMaze.delete(values[Math.floor(Math.random() * values.length)]);
+  while (notMaze.size > 0) {
+    var path = new WeakMap();
+    var start = values[Math.floor(Math.random() * values.length)];
+    var current = start;
+    while (notMaze.has(current)) {
+      var neighbors = getNeighbors(current, grid);
+      var [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      path.set(current, direction);
+      current = next;
+    }
+    current = start;
+    while (notMaze.has(current)) {
+      notMaze.delete(current);
+      var direction = path.get(current);
+      current.walls[current.getWallByDirection(direction)] = true;
+      current = getNeighbor(current, current.getTranslations()[direction], grid);
+      current.walls[current.getWallByDirection(current.getOpposite(direction))] = true;
     }
   }
 }
@@ -299,6 +370,7 @@ function draw(cell, drawData) {
 function generate() {
   xSize = parseInt(document.getElementById("x").value);
   ySize = parseInt(document.getElementById("y").value);
+  zSize = parseInt(document.getElementById("z").value);
   sideLength = parseInt(document.getElementById("sideLength").value);
   thickness = parseInt(document.getElementById("thickness").value);
   cellShape = document.getElementById("shape").value;
@@ -308,68 +380,78 @@ function generate() {
 
   switch (cellShape) {
     case "delta":
-      this.createCell = function (x, y) {
-        if (x % 2 == 1 ^ y % 2 == 1) {
-          return new DownwardTriCell(x, y);
+      this.createCell = function (x, y, z) {
+        if (x % 2 == 1 ^ z % 2 == 1) {
+          return new DownwardTriCell(x, z);
         }
-        return new UpwardTriCell(x, y);
+        return new UpwardTriCell(x, z);
       }
       this.drawData = function (cell) {
         return [
           (cell.x + 1) * (sideLength * 0.5) + thickness,
-          cell instanceof DownwardTriCell ? cell.y * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness :
-            (cell.y + 1) * sideLength * SQRT3 / 2 - sideLength / SQRT3 / 2 + thickness,
+          cell instanceof DownwardTriCell ? cell.z * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness :
+            (cell.z + 1) * sideLength * SQRT3 / 2 - sideLength / SQRT3 / 2 + thickness,
           cell instanceof DownwardTriCell ? Math.PI / 6 : Math.PI / 2
         ];
       }
       canvas.width = (Math.ceil(xSize / 2) + 1) * sideLength + (thickness * 2);
-      canvas.height = ySize * sideLength * (SQRT3 / 2) + (thickness * 2);
+      canvas.height = zSize * sideLength * (SQRT3 / 2) + (thickness * 2);
       break;
     case "orthogonal":
-      this.createCell = function (x, y) {
-        return new QuadCell(x, y);
+      this.createCell = function (x, y, z) {
+        return new QuadCell(x, z);
       }
       this.drawData = function (cell) {
-        return [(cell.x + 0.5) * sideLength + thickness, (cell.y + 0.5) * sideLength + thickness, Math.PI / 4];
+        return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + thickness, Math.PI / 4];
       }
       canvas.width = xSize * sideLength + (thickness * 2);
-      canvas.height = ySize * sideLength + (thickness * 2);
+      canvas.height = zSize * sideLength + (thickness * 2);
       break;
     case "sigma":
-      this.createCell = function (x, y) {
+      this.createCell = function (x, y, z) {
         if (x % 2 == 0) {
-          return new BottomHexCell(x, y);
+          return new BottomHexCell(x, z);
         }
-        return new TopHexCell(x, y);
+        return new TopHexCell(x, z);
       }
       this.drawData = function (cell) {
         return [
           (cell.x + (2 / 3)) * (1.5 * sideLength) + thickness,
-          cell instanceof BottomHexCell ? (cell.y + 1) * sideLength * SQRT3 + thickness :
-            (cell.y + 0.5) * sideLength * SQRT3 + thickness,
+          cell instanceof BottomHexCell ? (cell.z + 1) * sideLength * SQRT3 + thickness :
+            (cell.z + 0.5) * sideLength * SQRT3 + thickness,
           0
         ];
       }
       canvas.width = (xSize + 1 / 3) * sideLength * 1.5 + (thickness * 2);
-      canvas.height = (ySize + 0.5) * sideLength * SQRT3 + (thickness * 2);
+      canvas.height = (zSize + 0.5) * sideLength * SQRT3 + (thickness * 2);
       break;
     case "upsilon":
-      this.createCell = function (x, y) {
-        if (x % 2 == 1 ^ y % 2 == 1) {
-          return new QuadCell(x, y);
+      this.createCell = function (x, y, z) {
+        if (x % 2 == 1 ^ z % 2 == 1) {
+          return new QuadCell(x, z);
         }
-        return new OctCell(x, y);
+        return new OctCell(x, z);
       }
       this.drawData = function (cell) {
         var offset = 0.5 * sideLength / Math.SQRT2;
         return [
           (cell.x + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
-          (cell.y + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
+          (cell.z + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
           cell instanceof QuadCell ? Math.PI / 4 : Math.PI / 8
         ];
       }
       canvas.width = xSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
-      canvas.height = ySize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
+      canvas.height = zSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
+      break;
+    case "3d":
+      this.createCell = function (x, y, z) {
+        return new CubeCell(x, y, z);
+      }
+      this.drawData = function (cell) {
+        return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + cell.y * (zSize + 1) * sideLength + thickness, Math.PI / 4];
+      }
+      canvas.width = xSize * sideLength + (thickness * 2);
+      canvas.height = ySize * (zSize * sideLength) + (ySize - 1) * sideLength + (thickness * 2);
       break;
   }
 
@@ -378,7 +460,9 @@ function generate() {
   var grid = {};
   for (let i = 0; i < xSize; i++) {
     for (let j = 0; j < ySize; j++) {
-      grid[i + "," + j] = this.createCell(i, j);
+      for (let k = 0; k < zSize; k++) {
+        grid[i + "," + j + "," + k] = this.createCell(i, j, k);
+      }
     }
   }
 
@@ -389,10 +473,14 @@ function generate() {
     case "kruskal":
       kruskal(grid);
       break;
-    case "recursiveBacktracking":
-      recursiveBacktracking(grid);
+    case "recursiveBacktracker":
+      recursiveBacktracker(grid);
+      break;
+    case "wilson":
+      wilson(grid);
       break;
   }
+  console.log(grid);
 
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
@@ -407,12 +495,25 @@ function generate() {
 
   for (let i = 0; i < xSize; i++) {
     for (let j = 0; j < ySize; j++) {
-      var cell = grid[i + "," + j];
-      draw(cell, this.drawData(cell));
+      for (let k = 0; k < zSize; k++) {
+        var cell = grid[i + "," + j + "," + k];
+        cell.draw(this.drawData(cell));
+      }
     }
   }
 
   context.stroke();
 
   console.log("Draw time: " + (new Date().getTime() - start));
+}
+
+function algorithmClick() {
+  var algorithm = document.getElementById("algorithm");
+  var shape = document.getElementById("shape");
+  if (algorithm.value == "eller") {
+    shape.value = "orthogonal";
+    shape.disabled = true;
+  } else {
+    shape.disabled = false;
+  }
 }
