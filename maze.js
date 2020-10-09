@@ -178,7 +178,7 @@ function CubeCell(x, y, z) {
   }
 
   this.getWallByDirection = function (direction) {
-    switch (direction) {
+    switch (parseInt(direction)) {
       case 0:
         return 0;
       case 1:
@@ -207,14 +207,14 @@ function CubeCell(x, y, z) {
       }
     }
     if (this.walls[4]) {
-      context.moveTo(centerX + sideLength * 3 / 8, centerY + sideLength / 8);
-      context.lineTo(centerX, centerY + sideLength * 3 / 8);
-      context.lineTo(centerX - sideLength * 3 / 8, centerY + sideLength / 8);
-    }
-    if (this.walls[5]) {
       context.moveTo(centerX + sideLength * 3 / 8, centerY - sideLength / 8);
       context.lineTo(centerX, centerY - sideLength * 3 / 8);
       context.lineTo(centerX - sideLength * 3 / 8, centerY - sideLength / 8);
+    }
+    if (this.walls[5]) {
+      context.moveTo(centerX + sideLength * 3 / 8, centerY + sideLength / 8);
+      context.lineTo(centerX, centerY + sideLength * 3 / 8);
+      context.lineTo(centerX - sideLength * 3 / 8, centerY + sideLength / 8);
     }
   }
 }
@@ -259,7 +259,7 @@ function getNeighbor(cell, translation, grid) {
 }
 
 function getNeighbors(cell, grid, visited) {
-  var neighbors = []
+  var neighbors = [];
   for (let [direction, translation] of Object.entries(cell.getTranslations())) {
     var neighbor = getNeighbor(cell, translation, grid);
     if (neighbor != null && (visited == null || !visited.has(neighbor))) {
@@ -480,7 +480,6 @@ function generate() {
       wilson(grid);
       break;
   }
-  console.log(grid);
 
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
