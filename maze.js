@@ -2,7 +2,6 @@
 const SQRT3 = Math.sqrt(3);
 
 var xSize, ySize, zSize, sideLength, thickness, cellShape, algorithm, canvas, context;
-var downloadEl = document.getElementById("download");
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -526,5 +525,5 @@ function shapeChange() {
 
 function downloadMaze() {
   var image = canvas.toDataURL("maze/png");
-  downloadEl.href = image;
+  document.getElementById("download").href = image;
 }
