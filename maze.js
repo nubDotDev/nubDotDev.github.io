@@ -496,9 +496,10 @@ function generate() {
   }
 
   context.stroke();
-  downloadEl.style.display = "block";
 
   console.log("Draw time: " + (new Date().getTime() - start));
+  
+  document.getElementById("download").style.display = "block";
 }
 
 function algorithmChange() {
