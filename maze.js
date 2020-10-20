@@ -1,6 +1,8 @@
+// TODO figure out scoping, especially with getting elements
 const SQRT3 = Math.sqrt(3);
 
 var xSize, ySize, zSize, sideLength, thickness, cellShape, algorithm, canvas, context;
+var downloadEl = document.getElementById("download");
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -14,7 +16,7 @@ function Cell(x, y, z, wallCount) {
   }
 
   this.getTranslations = function () {
-    throw Error("getTranslation not implemented");
+    throw Error("getTranslations not implemented");
   }
 
   this.getOpposite = function (direction) {
@@ -27,10 +29,10 @@ function Cell(x, y, z, wallCount) {
 
   this.draw = function (drawData) {
     var [centerX, centerY, angle] = drawData;
-    var radius = sideLength / Math.sin(Math.PI / wallCount) / 2;
+    var radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    for (let i = 0; i < wallCount; i++) {
-      angle -= Math.PI * 2 / wallCount;
+    for (let i = 0; i < this.wallCount; i++) {
+      angle -= Math.PI * 2 / this.wallCount;
       if (!this.walls[i]) {
         context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
       } else {
@@ -286,11 +288,7 @@ function aldousBroder(grid) {
   }
 }
 
-function eller(grid) {
-
-}
-
-// TODO optimize
+// TODO optimize (maybe make walls a set)
 function kruskal(grid) {
   var disjointSet = new DisjointSet();
   var walls = [];
@@ -314,9 +312,6 @@ function kruskal(grid) {
   }
 }
 
-function prim(grid) {
-}
-
 function recursiveBacktracker(grid) {
   var values = Object.values(grid);
   var current = values[Math.floor(Math.random() * values.length)];
@@ -336,10 +331,6 @@ function recursiveBacktracker(grid) {
       current = backtrack.pop();
     }
   }
-}
-
-function recursiveDivision(grid) {
-
 }
 
 function wilson(grid) {
@@ -366,6 +357,7 @@ function wilson(grid) {
     }
   }
 }
+
 
 function generate() {
   xSize = parseInt(document.getElementById("x").value);
@@ -470,6 +462,9 @@ function generate() {
     case "aldousBroder":
       aldousBroder(grid);
       break;
+    case "eller":
+      eller(grid);
+      break;
     case "kruskal":
       kruskal(grid);
       break;
@@ -502,11 +497,12 @@ function generate() {
   }
 
   context.stroke();
+  downloadEl.style.display = "block";
 
   console.log("Draw time: " + (new Date().getTime() - start));
 }
 
-function algorithmClick() {
+function algorithmChange() {
   var algorithm = document.getElementById("algorithm");
   var shape = document.getElementById("shape");
   if (algorithm.value == "eller") {
@@ -515,4 +511,20 @@ function algorithmClick() {
   } else {
     shape.disabled = false;
   }
+}
+
+function shapeChange() {
+  var shape = document.getElementById("shape");
+  var y = document.getElementById("y");
+  if (shape.value == "3d") {
+    y.disabled = false;
+  } else {
+    y.value = 1;
+    y.disabled = true;
+  }
+}
+
+function downloadMaze() {
+  var image = canvas.toDataURL("maze/png");
+  downloadEl.href = image;
 }
