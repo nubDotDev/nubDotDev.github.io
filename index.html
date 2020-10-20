@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maze Generator</title>
+  <script src="maze.js"></script>
 </head>
 <body>
   <p>Welcome to the maze generator!</p>
-  <select name="algorithm" id="algorithm" onclick="algorithmChange()">
+  <select name="algorithm" id="algorithm" onchange="algorithmChange()">
     <option value="defaultAlgorithm">--Algorithm--</option>
     <option value="aldousBroder">Aldous Broder</option>
     <option value="kruskal">Kruskal</option>
@@ -31,6 +32,5 @@
   <br><br>
   <canvas id="maze"></canvas>
   <a href="#" class="button" download="maze.png" id="download" onclick="downloadMaze()" style="display: none;">Download</a>
-  <script src="maze.js"></script>
 </body>
 </html>
