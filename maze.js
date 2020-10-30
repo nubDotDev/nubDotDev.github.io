@@ -1,7 +1,9 @@
 // TODO figure out scoping, especially with getting elements
 const SQRT3 = Math.sqrt(3);
 
-var xSize, ySize, zSize, sideLength, thickness, cellShape, algorithm, canvas, context;
+let xSize, ySize, zSize, horizontalBias, sideLength, thickness, cellShape, algorithm, canvas, context;
+let testElem = document.getElementById("x");
+console.log(testElem.value);
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -27,8 +29,8 @@ function Cell(x, y, z, wallCount) {
   }
 
   this.draw = function (drawData) {
-    var [centerX, centerY, angle] = drawData;
-    var radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
+    let [centerX, centerY, angle] = drawData;
+    let radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     for (let i = 0; i < this.wallCount; i++) {
       angle -= Math.PI * 2 / this.wallCount;
@@ -145,7 +147,7 @@ function OctCell(x, z) {
   }
 
   this.getOpposite = function (direction) {
-    var d = parseInt(direction);
+    let d = parseInt(direction);
     if (d <= 3) {
       return (d + 2) % 4;
     }
@@ -196,8 +198,8 @@ function CubeCell(x, y, z) {
   }
 
   this.draw = function (drawData) {
-    var [centerX, centerY, angle] = drawData;
-    var radius = sideLength / Math.sin(Math.PI / 4) / 2;
+    let [centerX, centerY, angle] = drawData;
+    let radius = sideLength / Math.sin(Math.PI / 4) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     for (let i = 0; i < 4; i++) {
       angle -= Math.PI / 2;
@@ -260,9 +262,9 @@ function getNeighbor(cell, translation, grid) {
 }
 
 function getNeighbors(cell, grid, visited) {
-  var neighbors = [];
+  let neighbors = [];
   for (let [direction, translation] of Object.entries(cell.getTranslations())) {
-    var neighbor = getNeighbor(cell, translation, grid);
+    let neighbor = getNeighbor(cell, translation, grid);
     if (neighbor != null && (visited == null || !visited.has(neighbor))) {
       neighbors.push([neighbor, direction]);
     }
@@ -271,13 +273,13 @@ function getNeighbors(cell, grid, visited) {
 }
 
 function aldousBroder(grid) {
-  var values = Object.values(grid);
-  var current = values[Math.floor(Math.random() * values.length)];
-  var visited = new Set();
+  let values = Object.values(grid);
+  let current = values[Math.floor(Math.random() * values.length)];
+  let visited = new Set();
   visited.add(current);
   while (visited.size < values.length) {
-    var neighbors = getNeighbors(current, grid);
-    var [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+    let neighbors = getNeighbors(current, grid);
+    let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
     if (!visited.has(next)) {
       current.walls[current.getWallByDirection(direction)] = true;
       next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
@@ -287,10 +289,9 @@ function aldousBroder(grid) {
   }
 }
 
-// TODO optimize (maybe make walls a set)
 function kruskal(grid) {
-  var disjointSet = new DisjointSet();
-  var walls = [];
+  let disjointSet = new DisjointSet();
+  let walls = [];
   for (let cell of Object.values(grid)) {
     disjointSet.addSet(cell);
     for (let direction of Object.keys(cell.getTranslations())) {
@@ -298,10 +299,10 @@ function kruskal(grid) {
     }
   }
   while (walls.length > 0) {
-    var random = Math.floor(Math.random() * walls.length);
-    var [cell, direction] = walls[random];
+    let random = Math.floor(Math.random() * walls.length);
+    let [cell, direction] = walls[random];
     walls.splice(random, 1);
-    var other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+    let other = getNeighbor(cell, cell.getTranslations()[direction], grid);
     if (other != null) {
       if (disjointSet.union(cell, other)) {
         cell.walls[cell.getWallByDirection(direction)] = true;
@@ -311,16 +312,42 @@ function kruskal(grid) {
   }
 }
 
+function prim(grid) {
+  let visited = new Set;
+  let values = Object.values(grid);
+  let start = values[Math.floor(Math.random() * values.length)];
+  visited.add(start);
+  let frontier = [];
+  for (let neighbor of getNeighbors(start, grid)) {
+    frontier.push(neighbor);
+  }
+  while (frontier.length > 0) {
+    let random = Math.floor(Math.random() * frontier.length);
+    let [cell, direction] = frontier[random];
+    frontier.splice(random, 1);
+    if (!visited.has(cell)) {
+      let opposite = cell.getOpposite(direction);
+      cell.walls[cell.getWallByDirection(opposite)] = true;
+      let next = getNeighbor(cell, cell.getTranslations()[opposite], grid);
+      next.walls[next.getWallByDirection(direction)] = true;
+      visited.add(cell);
+    }
+    for (let neighbor of getNeighbors(cell, grid, visited)) {
+      frontier.push(neighbor);
+    }
+  }
+}
+
 function recursiveBacktracker(grid) {
-  var values = Object.values(grid);
-  var current = values[Math.floor(Math.random() * values.length)];
-  var visited = new Set();
+  let values = Object.values(grid);
+  let current = values[Math.floor(Math.random() * values.length)];
+  let visited = new Set();
   visited.add(current);
-  var backtrack = [];
+  let backtrack = [];
   while (visited.size < values.length) {
-    var neighbors = getNeighbors(current, grid, visited);
+    let neighbors = getNeighbors(current, grid, visited);
     if (neighbors.length > 0) {
-      var [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
       current.walls[current.getWallByDirection(direction)] = true;
       next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
       backtrack.push(current);
@@ -332,24 +359,50 @@ function recursiveBacktracker(grid) {
   }
 }
 
+// TODO add bias
+function sidewinder(grid) {
+  for (let x = 0; x < xSize - 1; x++) {
+    grid[x + ",0,0"].walls[0] = true;
+    grid[(x + 1) + ",0,0"].walls[2] = true;
+  }
+  for (let z = 1; z < zSize; z++) {
+    let run = [];
+    current = grid["0,0," + z];
+    while (current != null) {
+      let next = getNeighbor(current, [1, 0, 0], grid);
+      run.push(current);
+      if (Math.random() < horizontalBias && current.x != xSize - 1) {
+        current.walls[0] = true;
+        next.walls[2] = true;
+      } else {
+        let pop = run[Math.floor(Math.random() * run.length)];
+        pop.walls[3] = true;
+        getNeighbor(pop, [0, 0, -1], grid).walls[1] = true;
+        run = [];
+      }
+      current = next;
+    }
+  }
+}
+
 function wilson(grid) {
-  var values = Object.values(grid);
-  var notMaze = new Set(values);
+  let values = Object.values(grid);
+  let notMaze = new Set(values);
   notMaze.delete(values[Math.floor(Math.random() * values.length)]);
   while (notMaze.size > 0) {
-    var path = new WeakMap();
-    var start = values[Math.floor(Math.random() * values.length)];
-    var current = start;
+    let path = new WeakMap();
+    let start = values[Math.floor(Math.random() * values.length)];
+    let current = start;
     while (notMaze.has(current)) {
-      var neighbors = getNeighbors(current, grid);
-      var [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      let neighbors = getNeighbors(current, grid);
+      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
       path.set(current, direction);
       current = next;
     }
     current = start;
     while (notMaze.has(current)) {
       notMaze.delete(current);
-      var direction = path.get(current);
+      let direction = path.get(current);
       current.walls[current.getWallByDirection(direction)] = true;
       current = getNeighbor(current, current.getTranslations()[direction], grid);
       current.walls[current.getWallByDirection(current.getOpposite(direction))] = true;
@@ -357,11 +410,11 @@ function wilson(grid) {
   }
 }
 
-
 function generate() {
   xSize = parseInt(document.getElementById("x").value);
   ySize = parseInt(document.getElementById("y").value);
   zSize = parseInt(document.getElementById("z").value);
+  horizontalBias = parseFloat(document.getElementById("horizontalBias").value);
   sideLength = parseInt(document.getElementById("sideLength").value);
   thickness = parseInt(document.getElementById("thickness").value);
   cellShape = document.getElementById("shape").value;
@@ -424,7 +477,7 @@ function generate() {
         return new OctCell(x, z);
       }
       this.drawData = function (cell) {
-        var offset = 0.5 * sideLength / Math.SQRT2;
+        let offset = 0.5 * sideLength / Math.SQRT2;
         return [
           (cell.x + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
           (cell.z + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
@@ -446,9 +499,9 @@ function generate() {
       break;
   }
 
-  var start = new Date().getTime();
+  let start = new Date().getTime();
 
-  var grid = {};
+  let grid = {};
   for (let i = 0; i < xSize; i++) {
     for (let j = 0; j < ySize; j++) {
       for (let k = 0; k < zSize; k++) {
@@ -467,8 +520,14 @@ function generate() {
     case "kruskal":
       kruskal(grid);
       break;
+    case "prim":
+      prim(grid);
+      break;
     case "recursiveBacktracker":
       recursiveBacktracker(grid);
+      break;
+    case "sidewinder":
+      sidewinder(grid);
       break;
     case "wilson":
       wilson(grid);
@@ -489,7 +548,7 @@ function generate() {
   for (let i = 0; i < xSize; i++) {
     for (let j = 0; j < ySize; j++) {
       for (let k = 0; k < zSize; k++) {
-        var cell = grid[i + "," + j + "," + k];
+        let cell = grid[i + "," + j + "," + k];
         cell.draw(this.drawData(cell));
       }
     }
@@ -503,19 +562,28 @@ function generate() {
 }
 
 function algorithmChange() {
-  var algorithm = document.getElementById("algorithm");
-  var shape = document.getElementById("shape");
+  let algorithm = document.getElementById("algorithm");
+  let shape = document.getElementById("shape");
+  let horizontalBias = document.getElementById("horizontalBias");
   if (algorithm.value == "eller") {
     shape.value = "orthogonal";
     shape.disabled = true;
   } else {
     shape.disabled = false;
   }
+  if (algorithm.value == "sidewinder") {
+    shape.value = "orthogonal";
+    shape.disabled = true;
+    horizontalBias.disabled = false;
+  } else {
+    shape.disabled = false;
+    horizontalBias.disabled = true;
+  }
 }
 
 function shapeChange() {
-  var shape = document.getElementById("shape");
-  var y = document.getElementById("y");
+  let shape = document.getElementById("shape");
+  let y = document.getElementById("y");
   if (shape.value == "3d") {
     y.disabled = false;
   } else {
@@ -525,6 +593,6 @@ function shapeChange() {
 }
 
 function downloadMaze() {
-  var image = canvas.toDataURL("maze/png");
+  let image = canvas.toDataURL("maze/png");
   document.getElementById("download").href = image;
 }
