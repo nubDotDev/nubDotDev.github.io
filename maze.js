@@ -1,9 +1,16 @@
-// TODO figure out scoping, especially with getting elements
 const SQRT3 = Math.sqrt(3);
 
-let xSize, ySize, zSize, horizontalBias, sideLength, thickness, cellShape, algorithm, canvas, context;
-let testElem = document.getElementById("x");
-console.log(testElem.value);
+let xSizeElem = document.getElementById("x");
+let ySizeElem = document.getElementById("y");
+let zSizeElem = document.getElementById("z");
+let horizontalBiasElem = document.getElementById("horizontalBias");
+let sideLengthElem = document.getElementById("sideLength");
+let thicknessElem = document.getElementById("thickness");
+let cellShapeElem = document.getElementById("shape");
+let algorithmElem = document.getElementById("algorithm");
+let canvasElem = document.getElementById("maze");
+let context = canvasElem.getContext("2d");
+let xSize, ySize, zSize, horizontalBias, sideLength, thickness, cellShape, algorithm;
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -411,16 +418,14 @@ function wilson(grid) {
 }
 
 function generate() {
-  xSize = parseInt(document.getElementById("x").value);
-  ySize = parseInt(document.getElementById("y").value);
-  zSize = parseInt(document.getElementById("z").value);
-  horizontalBias = parseFloat(document.getElementById("horizontalBias").value);
-  sideLength = parseInt(document.getElementById("sideLength").value);
-  thickness = parseInt(document.getElementById("thickness").value);
-  cellShape = document.getElementById("shape").value;
-  algorithm = document.getElementById("algorithm").value;
-  canvas = document.getElementById("maze");
-  context = canvas.getContext("2d");
+  xSize = parseInt(xSizeElem.value);
+  ySize = parseInt(ySizeElem.value);
+  zSize = parseInt(zSizeElem.value);
+  horizontalBias = parseFloat(horizontalBiasElem.value);
+  sideLength = parseInt(sideLengthElem.value);
+  thickness = parseInt(thicknessElem.value);
+  cellShape = cellShapeElem.value;
+  algorithm = algorithmElem.value;
 
   switch (cellShape) {
     case "delta":
@@ -438,8 +443,8 @@ function generate() {
           cell instanceof DownwardTriCell ? Math.PI / 6 : Math.PI / 2
         ];
       }
-      canvas.width = (Math.ceil(xSize / 2) + 1) * sideLength + (thickness * 2);
-      canvas.height = zSize * sideLength * (SQRT3 / 2) + (thickness * 2);
+      canvasElem.width = (Math.ceil(xSize / 2) + 1) * sideLength + (thickness * 2);
+      canvasElem.height = zSize * sideLength * (SQRT3 / 2) + (thickness * 2);
       break;
     case "orthogonal":
       this.createCell = function (x, y, z) {
@@ -448,8 +453,8 @@ function generate() {
       this.drawData = function (cell) {
         return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + thickness, Math.PI / 4];
       }
-      canvas.width = xSize * sideLength + (thickness * 2);
-      canvas.height = zSize * sideLength + (thickness * 2);
+      canvasElem.width = xSize * sideLength + (thickness * 2);
+      canvasElem.height = zSize * sideLength + (thickness * 2);
       break;
     case "sigma":
       this.createCell = function (x, y, z) {
@@ -466,8 +471,8 @@ function generate() {
           0
         ];
       }
-      canvas.width = (xSize + 1 / 3) * sideLength * 1.5 + (thickness * 2);
-      canvas.height = (zSize + 0.5) * sideLength * SQRT3 + (thickness * 2);
+      canvasElem.width = (xSize + 1 / 3) * sideLength * 1.5 + (thickness * 2);
+      canvasElem.height = (zSize + 0.5) * sideLength * SQRT3 + (thickness * 2);
       break;
     case "upsilon":
       this.createCell = function (x, y, z) {
@@ -484,8 +489,8 @@ function generate() {
           cell instanceof QuadCell ? Math.PI / 4 : Math.PI / 8
         ];
       }
-      canvas.width = xSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
-      canvas.height = zSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
+      canvasElem.width = xSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
+      canvasElem.height = zSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
       break;
     case "3d":
       this.createCell = function (x, y, z) {
@@ -494,8 +499,8 @@ function generate() {
       this.drawData = function (cell) {
         return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + cell.y * (zSize + 1) * sideLength + thickness, Math.PI / 4];
       }
-      canvas.width = xSize * sideLength + (thickness * 2);
-      canvas.height = ySize * (zSize * sideLength) + (ySize - 1) * sideLength + (thickness * 2);
+      canvasElem.width = xSize * sideLength + (thickness * 2);
+      canvasElem.height = ySize * (zSize * sideLength) + (ySize - 1) * sideLength + (thickness * 2);
       break;
   }
 
@@ -538,10 +543,10 @@ function generate() {
   start = new Date().getTime();
 
   context.lineWidth = thickness;
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, canvasElem.width, canvasElem.height);
   context.fillStyle = "#ffffff"
   context.beginPath();
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   context.fill();
   context.fillStyle = "#000000"
 
@@ -562,37 +567,32 @@ function generate() {
 }
 
 function algorithmChange() {
-  let algorithm = document.getElementById("algorithm");
-  let shape = document.getElementById("shape");
-  let horizontalBias = document.getElementById("horizontalBias");
-  if (algorithm.value == "eller") {
-    shape.value = "orthogonal";
-    shape.disabled = true;
+  if (algorithmElem.value == "eller") {
+    cellShapeElem.value = "orthogonal";
+    cellShapeElem.disabled = true;
   } else {
-    shape.disabled = false;
+    cellShapeElem.disabled = false;
   }
-  if (algorithm.value == "sidewinder") {
-    shape.value = "orthogonal";
-    shape.disabled = true;
-    horizontalBias.disabled = false;
+  if (algorithmElem.value == "sidewinder") {
+    cellShapeElem.value = "orthogonal";
+    cellShapeElem.disabled = true;
+    horizontalBiasElem.disabled = false;
   } else {
-    shape.disabled = false;
-    horizontalBias.disabled = true;
+    cellShapeElem.disabled = false;
+    horizontalBiasElem.disabled = true;
   }
 }
 
 function shapeChange() {
-  let shape = document.getElementById("shape");
-  let y = document.getElementById("y");
   if (shape.value == "3d") {
-    y.disabled = false;
+    ySizeElem.disabled = false;
   } else {
-    y.value = 1;
-    y.disabled = true;
+    ySizeElem.value = 1;
+    ySizeElem.disabled = true;
   }
 }
 
 function downloadMaze() {
-  let image = canvas.toDataURL("maze/png");
+  let image = canvasElem.toDataURL("maze/png");
   document.getElementById("download").href = image;
 }
