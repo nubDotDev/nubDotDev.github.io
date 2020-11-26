@@ -249,8 +249,9 @@ function DisjointSet() {
     if (set == this.universe.get(set)) {
       return set;
     }
-    this.universe.set(set, this.find(this.universe.get(set)));
-    return this.universe.get(set);
+    let root = this.find(this.universe.get(set));
+    this.universe.set(set, root);
+    return root;
   }
 
   this.union = function (set1, set2) {
@@ -293,6 +294,61 @@ function aldousBroder(grid) {
       visited.add(next);
     }
     current = next;
+  }
+}
+
+function eller(grid) {
+  let prevRow = new DisjointSet();
+  for (let i = 0; i < zSize; i++) {
+    let currentRow = new DisjointSet();
+    let passages = new WeakMap();
+    for (let j = 0; j < xSize; j++) {
+      let cell = grid[j + ",0," + i];
+      if (prevRow.universe.has(cell)) {
+        let root = prevRow.find(cell);
+        let newRoot = passages.get(root);
+        if (newRoot) {
+          currentRow.universe.set(cell, newRoot);
+        } else {
+          currentRow.addSet(cell);
+          passages.set(root, cell);
+        }
+      } else {
+        currentRow.addSet(cell);
+      }
+    }
+    let sets = [[]];
+    let k = 0;
+    let isLastRow = i == zSize - 1;
+    for (let j = 0; j < xSize; j++) {
+      let current = grid[j + ",0," + i];
+      sets[k].push(current);
+      if ((isLastRow || Math.random() < horizontalBias) && j < xSize - 1) {
+        let next = grid[(j + 1) + ",0," + i];
+        if (currentRow.union(current, next)) {
+          current.walls[0] = true;
+          next.walls[2] = true;
+        }
+      } else {
+        k++;
+        sets[k] = []
+      }
+    }
+    if (isLastRow) {
+      return;
+    }
+    for (let set of sets) {
+      let index = Math.floor(Math.random() * set.length);
+      for (let j = 0; j < set.length; j++) {
+        if (j == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
+          set[j].walls[1] = true;
+          let cell = getNeighbor(set[j], [0, 0, 1], grid);
+          cell.walls[3] = true;
+          currentRow.universe.set(cell, set[j]);
+        }
+      }
+    }
+    prevRow = currentRow;
   }
 }
 
@@ -407,12 +463,12 @@ function recursiveDivision(grid) {
 
   let divide = function (x1, z1, width, length) {
     if (width > 1 && length > 1) {
-      if (width < length || (width == length && Math.random() < horizontalBias)) {
+      if (width < length || (width == length && Math.round(Math.random()))) {
         let path = x1 + Math.floor(Math.random() * width);
         let z = z1 + Math.floor(Math.random() * (length - 1));
-        for (let x = x1; x < x1 + width; x++) {
-          if (x != path) {
-            let cell = grid[x + ",0," + z];
+        for (let i = x1; i < x1 + width; i++) {
+          if (i != path) {
+            let cell = grid[i + ",0," + z];
             cell.walls[1] = false;
             getNeighbor(cell, cell.getTranslations()[1], grid).walls[3] = false;
           }
@@ -422,9 +478,9 @@ function recursiveDivision(grid) {
       } else {
         let path = z1 + Math.floor(Math.random() * length);
         let x = x1 + Math.floor(Math.random() * (width - 1));
-        for (let z = z1; z < z1 + length; z++) {
-          if (z != path) {
-            let cell = grid[x + ",0," + z];
+        for (let i = z1; i < z1 + length; i++) {
+          if (i != path) {
+            let cell = grid[x + ",0," + i];
             cell.walls[0] = false;
             getNeighbor(cell, cell.getTranslations()[0], grid).walls[2] = false;
           }
@@ -625,6 +681,7 @@ function algorithmChange() {
   if (algorithmElem.value == "eller") {
     cellShapeElem.value = "orthogonal";
     cellShapeElem.disabled = true;
+    horizontalBiasElem.disabled = false;
   }
   if (algorithmElem.value == "recursiveDivision") {
     cellShapeElem.value = "orthogonal";
