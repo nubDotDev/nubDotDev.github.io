@@ -268,11 +268,11 @@ function getNeighbor(cell, translation, grid) {
   return grid[(cell.x + translation[0]) + "," + (cell.y + translation[1]) + "," + (cell.z + translation[2])];
 }
 
-function getNeighbors(cell, grid, visited) {
+function getNeighbors(cell, grid, visited, inverse) {
   let neighbors = [];
   for (let [direction, translation] of Object.entries(cell.getTranslations())) {
     let neighbor = getNeighbor(cell, translation, grid);
-    if (neighbor != null && (visited == null || !visited.has(neighbor))) {
+    if (neighbor != null && (!inverse == (visited == null || !visited.has(neighbor)))) {
       neighbors.push([neighbor, direction]);
     }
   }
@@ -293,6 +293,37 @@ function aldousBroder(grid) {
       visited.add(next);
     }
     current = next;
+  }
+}
+
+function huntAndKill(grid) {
+  let values = Object.values(grid);
+  let current = values[Math.floor(Math.random() * values.length)];
+  let visited = new Set();
+  visited.add(current);
+  while (visited.size < values.length) {
+    let neighbors = getNeighbors(current, grid, visited);
+    if (neighbors.length > 0) {
+      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      current.walls[current.getWallByDirection(direction)] = true;
+      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      current = next;
+      visited.add(current);
+    } else {
+      for (let cell of values) {
+        if (!visited.has(cell)) {
+          let neighbors = getNeighbors(cell, grid, visited, true);
+          if (neighbors.length > 0) {
+            current = cell;
+            let [other, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+            current.walls[current.getWallByDirection(direction)] = true;
+            other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
+            visited.add(current);
+            break;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -557,31 +588,8 @@ function generate() {
     }
   }
 
-  switch (algorithm) {
-    case "aldousBroder":
-      aldousBroder(grid);
-      break;
-    case "eller":
-      eller(grid);
-      break;
-    case "kruskal":
-      kruskal(grid);
-      break;
-    case "prim":
-      prim(grid);
-      break;
-    case "recursiveBacktracking":
-      recursiveBacktracking(grid);
-      break;
-    case "recursiveDivision":
-      recursiveDivision(grid);
-      break;
-    case "sidewinder":
-      sidewinder(grid);
-      break;
-    case "wilson":
-      wilson(grid);
-      break;
+  if (algorithm != "defaultAlgorithm") {
+    eval(algorithm)(grid);
   }
 
   console.log("Generation time: " + (new Date().getTime() - start));
