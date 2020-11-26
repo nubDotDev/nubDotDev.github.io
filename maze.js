@@ -58,12 +58,12 @@ function QuadCell(x, z) {
   }
 }
 
-QuadCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 0, 1],
-  2: [-1, 0, 0],
-  3: [0, 0, -1]
-}
+QuadCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1]
+]
 
 function BottomHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
@@ -73,14 +73,14 @@ function BottomHexCell(x, z) {
   }
 }
 
-BottomHexCell.translations = {
-  0: [1, 0, 1],
-  1: [0, 0, 1],
-  2: [-1, 0, 1],
-  3: [-1, 0, 0],
-  4: [0, 0, -1],
-  5: [1, 0, 0]
-}
+BottomHexCell.translations = [
+  [1, 0, 1],
+  [0, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1],
+  [1, 0, 0]
+]
 
 function TopHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
@@ -90,14 +90,14 @@ function TopHexCell(x, z) {
   }
 }
 
-TopHexCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 0, 1],
-  2: [-1, 0, 0],
-  3: [-1, 0, -1],
-  4: [0, 0, -1],
-  5: [1, 0, -1]
-}
+TopHexCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [-1, 0, -1],
+  [0, 0, -1],
+  [1, 0, -1]
+]
 
 function getTriOpposite(direction) {
   return -1 * (parseInt(direction) - 1) + 1;
@@ -113,11 +113,11 @@ function UpwardTriCell(x, z) {
   this.getOpposite = getTriOpposite;
 }
 
-UpwardTriCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 0, 1],
-  2: [-1, 0, 0]
-}
+UpwardTriCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0]
+]
 
 function DownwardTriCell(x, z) {
   Cell.call(this, x, 0, z, 3);
@@ -140,11 +140,11 @@ function DownwardTriCell(x, z) {
   }
 }
 
-DownwardTriCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 0, -1],
-  2: [-1, 0, 0]
-}
+DownwardTriCell.translations = [
+  [1, 0, 0],
+  [0, 0, -1],
+  [-1, 0, 0]
+]
 
 function OctCell(x, z) {
   Cell.call(this, x, 0, z, 8);
@@ -169,16 +169,16 @@ function OctCell(x, z) {
   }
 }
 
-OctCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 0, 1],
-  2: [-1, 0, 0],
-  3: [0, 0, -1],
-  4: [1, 0, 1],
-  5: [-1, 0, 1],
-  6: [-1, 0, -1],
-  7: [1, 0, -1]
-}
+OctCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1],
+  [1, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, -1],
+  [1, 0, -1]
+]
 
 function CubeCell(x, y, z) {
   Cell.call(this, x, y, z, 6);
@@ -229,14 +229,14 @@ function CubeCell(x, y, z) {
   }
 }
 
-CubeCell.translations = {
-  0: [1, 0, 0],
-  1: [0, 1, 0],
-  2: [0, 0, 1],
-  3: [-1, 0, 0],
-  4: [0, -1, 0],
-  5: [0, 0, -1]
-}
+CubeCell.translations = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, -1, 0],
+  [0, 0, -1]
+]
 
 function DisjointSet() {
   this.universe = new WeakMap();
@@ -345,7 +345,7 @@ function prim(grid) {
   }
 }
 
-function recursiveBacktracker(grid) {
+function recursiveBacktracking(grid) {
   let values = Object.values(grid);
   let current = values[Math.floor(Math.random() * values.length)];
   let visited = new Set();
@@ -366,7 +366,47 @@ function recursiveBacktracker(grid) {
   }
 }
 
-// TODO add bias
+function recursiveDivision(grid) {
+  for (let cell of Object.values(grid)) {
+    cell.walls[0] = cell.x != xSize - 1;
+    cell.walls[1] = cell.z != zSize - 1;
+    cell.walls[2] = cell.x != 0;
+    cell.walls[3] = cell.z != 0;
+  }
+
+  let divide = function (x1, z1, width, length) {
+    if (width > 1 && length > 1) {
+      if (width < length || (width == length && Math.random() < horizontalBias)) {
+        let path = x1 + Math.floor(Math.random() * width);
+        let z = z1 + Math.floor(Math.random() * (length - 1));
+        for (let x = x1; x < x1 + width; x++) {
+          if (x != path) {
+            let cell = grid[x + ",0," + z];
+            cell.walls[1] = false;
+            getNeighbor(cell, cell.getTranslations()[1], grid).walls[3] = false;
+          }
+        }
+        divide(x1, z1, width, z - z1 + 1);
+        divide(x1, z + 1, width, length - (z - z1 + 1));
+      } else {
+        let path = z1 + Math.floor(Math.random() * length);
+        let x = x1 + Math.floor(Math.random() * (width - 1));
+        for (let z = z1; z < z1 + length; z++) {
+          if (z != path) {
+            let cell = grid[x + ",0," + z];
+            cell.walls[0] = false;
+            getNeighbor(cell, cell.getTranslations()[0], grid).walls[2] = false;
+          }
+        }
+        divide(x1, z1, x - x1 + 1, length);
+        divide(x + 1, z1, width - (x - x1 + 1), length);
+      }
+    }
+  }
+
+  divide(0, 0, xSize, zSize);
+}
+
 function sidewinder(grid) {
   for (let x = 0; x < xSize - 1; x++) {
     grid[x + ",0,0"].walls[0] = true;
@@ -438,7 +478,8 @@ function generate() {
       this.drawData = function (cell) {
         return [
           (cell.x + 1) * (sideLength * 0.5) + thickness,
-          cell instanceof DownwardTriCell ? cell.z * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness :
+          cell instanceof DownwardTriCell ?
+            cell.z * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness :
             (cell.z + 1) * sideLength * SQRT3 / 2 - sideLength / SQRT3 / 2 + thickness,
           cell instanceof DownwardTriCell ? Math.PI / 6 : Math.PI / 2
         ];
@@ -466,7 +507,8 @@ function generate() {
       this.drawData = function (cell) {
         return [
           (cell.x + (2 / 3)) * (1.5 * sideLength) + thickness,
-          cell instanceof BottomHexCell ? (cell.z + 1) * sideLength * SQRT3 + thickness :
+          cell instanceof BottomHexCell ?
+            (cell.z + 1) * sideLength * SQRT3 + thickness :
             (cell.z + 0.5) * sideLength * SQRT3 + thickness,
           0
         ];
@@ -528,8 +570,11 @@ function generate() {
     case "prim":
       prim(grid);
       break;
-    case "recursiveBacktracker":
-      recursiveBacktracker(grid);
+    case "recursiveBacktracking":
+      recursiveBacktracking(grid);
+      break;
+    case "recursiveDivision":
+      recursiveDivision(grid);
       break;
     case "sidewinder":
       sidewinder(grid);
@@ -562,24 +607,25 @@ function generate() {
   context.stroke();
 
   console.log("Draw time: " + (new Date().getTime() - start));
-  
+
   document.getElementById("download").style.display = "block";
 }
 
 function algorithmChange() {
+  cellShapeElem.disabled = false;
+  horizontalBiasElem.disabled = true;
   if (algorithmElem.value == "eller") {
     cellShapeElem.value = "orthogonal";
     cellShapeElem.disabled = true;
-  } else {
-    cellShapeElem.disabled = false;
+  }
+  if (algorithmElem.value == "recursiveDivision") {
+    cellShapeElem.value = "orthogonal";
+    cellShapeElem.disabled = true;
   }
   if (algorithmElem.value == "sidewinder") {
     cellShapeElem.value = "orthogonal";
     cellShapeElem.disabled = true;
     horizontalBiasElem.disabled = false;
-  } else {
-    cellShapeElem.disabled = false;
-    horizontalBiasElem.disabled = true;
   }
 }
 
