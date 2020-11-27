@@ -1,17 +1,22 @@
 const SQRT3 = Math.sqrt(3);
 
 let algorithmElem = document.getElementById("algorithm");
-let cellShapeElem = document.getElementById("shape");
-let xSizeElem = document.getElementById("x");
-let ySizeElem = document.getElementById("y");
-let zSizeElem = document.getElementById("z");
+let cellShapeElem = document.getElementById("cellShape");
+let xSizeElem = document.getElementById("xSize");
+let ySizeElem = document.getElementById("ySize");
+let zSizeElem = document.getElementById("zSize");
 let horizontalBiasElem = document.getElementById("horizontalBias");
-let newestBiasElem = document.getElementById("newestBias");
+let growingTreeIndexElem = document.getElementById("growingTreeIndex");
+let indexBiasElem = document.getElementById("indexBias");
 let sideLengthElem = document.getElementById("sideLength");
 let thicknessElem = document.getElementById("thickness");
 let canvasElem = document.getElementById("maze");
 let context = canvasElem.getContext("2d");
-let algorithm, cellShape, xSize, ySize, zSize, horizontalBias, newestBias, sideLength, thickness;
+
+let algorithm, cellShape;
+let xSize, ySize, zSize;
+let horizontalBias, growingTreeIndex, indexBias;
+let sideLength, thickness;
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -25,7 +30,11 @@ function Cell(x, y, z, wallCount) {
   }
 
   this.getTranslations = function () {
-    throw Error("getTranslations not implemented");
+    return [];
+  }
+
+  this.getSouthEasterns = function () {
+    return [];
   }
 
   this.getOpposite = function (direction) {
@@ -42,11 +51,8 @@ function Cell(x, y, z, wallCount) {
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     for (let i = 0; i < this.wallCount; i++) {
       angle -= Math.PI * 2 / this.wallCount;
-      if (!this.walls[i]) {
-        context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-      } else {
-        context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-      }
+      let toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
+      toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     }
   }
 }
@@ -55,50 +61,56 @@ function QuadCell(x, z) {
   Cell.call(this, x, 0, z, 4);
 
   this.getTranslations = function () {
-    return QuadCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 0, 1],
+      [-1, 0, 0],
+      [0, 0, -1]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0, 1];
   }
 }
-
-QuadCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1]
-]
 
 function BottomHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
-    return BottomHexCell.translations;
+    return [
+      [1, 0, 1],
+      [0, 0, 1],
+      [-1, 0, 1],
+      [-1, 0, 0],
+      [0, 0, -1],
+      [1, 0, 0]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0, 1, 5];
   }
 }
-
-BottomHexCell.translations = [
-  [1, 0, 1],
-  [0, 0, 1],
-  [-1, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1],
-  [1, 0, 0]
-]
 
 function TopHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
-    return TopHexCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 0, 1],
+      [-1, 0, 0],
+      [-1, 0, -1],
+      [0, 0, -1],
+      [1, 0, -1]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0, 1];
   }
 }
-
-TopHexCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [-1, 0, -1],
-  [0, 0, -1],
-  [1, 0, -1]
-]
 
 function getTriOpposite(direction) {
   return -1 * (parseInt(direction) - 1) + 1;
@@ -108,23 +120,33 @@ function UpwardTriCell(x, z) {
   Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
-    return UpwardTriCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 0, 1],
+      [-1, 0, 0]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0, 1];
   }
 
   this.getOpposite = getTriOpposite;
 }
 
-UpwardTriCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0]
-]
-
 function DownwardTriCell(x, z) {
   Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
-    return DownwardTriCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 0, -1],
+      [-1, 0, 0]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0];
   }
 
   this.getOpposite = getTriOpposite;
@@ -141,17 +163,24 @@ function DownwardTriCell(x, z) {
   }
 }
 
-DownwardTriCell.translations = [
-  [1, 0, 0],
-  [0, 0, -1],
-  [-1, 0, 0]
-]
-
 function OctCell(x, z) {
   Cell.call(this, x, 0, z, 8);
 
   this.getTranslations = function () {
-    return OctCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 0, 1],
+      [-1, 0, 0],
+      [0, 0, -1],
+      [1, 0, 1],
+      [-1, 0, 1],
+      [-1, 0, -1],
+      [1, 0, -1]
+    ];
+  }
+
+  this.getSouthEasterns = function () {
+    return [0, 1, 4];
   }
 
   this.getOpposite = function (direction) {
@@ -170,22 +199,18 @@ function OctCell(x, z) {
   }
 }
 
-OctCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1],
-  [1, 0, 1],
-  [-1, 0, 1],
-  [-1, 0, -1],
-  [1, 0, -1]
-]
-
 function CubeCell(x, y, z) {
   Cell.call(this, x, y, z, 6);
 
   this.getTranslations = function () {
-    return CubeCell.translations;
+    return [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+      [-1, 0, 0],
+      [0, -1, 0],
+      [0, 0, -1]
+    ];
   }
 
   this.getWallByDirection = function (direction) {
@@ -229,15 +254,6 @@ function CubeCell(x, y, z) {
     }
   }
 }
-
-CubeCell.translations = [
-  [1, 0, 0],
-  [0, 1, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [0, -1, 0],
-  [0, 0, -1]
-]
 
 function DisjointSet() {
   this.universe = new WeakMap();
@@ -300,11 +316,11 @@ function aldousBroder(grid) {
 
 function eller(grid) {
   let prevRow = new DisjointSet();
-  for (let i = 0; i < zSize; i++) {
+  for (let z = 0; z < zSize; z++) {
     let currentRow = new DisjointSet();
     let passages = new WeakMap();
-    for (let j = 0; j < xSize; j++) {
-      let cell = grid[j + ",0," + i];
+    for (let x = 0; x < xSize; x++) {
+      let cell = grid[x + ",0," + z];
       if (prevRow.universe.has(cell)) {
         let root = prevRow.find(cell);
         let newRoot = passages.get(root);
@@ -320,12 +336,12 @@ function eller(grid) {
     }
     let sets = [[]];
     let k = 0;
-    let isLastRow = i == zSize - 1;
-    for (let j = 0; j < xSize; j++) {
-      let current = grid[j + ",0," + i];
+    let isLastRow = z == zSize - 1;
+    for (let x = 0; x < xSize; x++) {
+      let current = grid[x + ",0," + z];
       sets[k].push(current);
-      if ((isLastRow || Math.random() < horizontalBias) && j < xSize - 1) {
-        let next = grid[(j + 1) + ",0," + i];
+      if ((isLastRow || Math.random() < horizontalBias) && x < xSize - 1) {
+        let next = grid[(x + 1) + ",0," + z];
         if (currentRow.union(current, next)) {
           current.walls[0] = true;
           next.walls[2] = true;
@@ -340,12 +356,12 @@ function eller(grid) {
     }
     for (let set of sets) {
       let index = Math.floor(Math.random() * set.length);
-      for (let j = 0; j < set.length; j++) {
-        if (j == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
-          set[j].walls[1] = true;
-          let cell = getNeighbor(set[j], [0, 0, 1], grid);
+      for (let i = 0; i < set.length; i++) {
+        if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
+          set[i].walls[1] = true;
+          let cell = getNeighbor(set[i], [0, 0, 1], grid);
           cell.walls[3] = true;
-          currentRow.universe.set(cell, set[j]);
+          currentRow.universe.set(cell, set[i]);
         }
       }
     }
@@ -358,7 +374,7 @@ function growingTree(grid) {
   let maze = [values[Math.floor(Math.random() * values.length)]];
   let visited = new Set(maze);
   while (maze.length > 0) {
-    let random = Math.floor((1 - newestBias) * Math.random() * maze.length + newestBias * (maze.length - 1));
+    let random = Math.floor((1 - indexBias) * Math.random() * growingTreeIndex * maze.length + indexBias * (growingTreeIndex * (maze.length - 1)));
     let cell = maze[random];
     let neighbors = getNeighbors(cell, grid, visited);
     if (neighbors.length == 0) {
@@ -427,6 +443,23 @@ function kruskal(grid) {
   }
 }
 
+function nAryTree(grid) {
+  for (let cell of Object.values(grid)) {
+    let directions = cell.getSouthEasterns();
+    while (directions.length > 0) {
+      let random = Math.floor(Math.random() * directions.length);
+      let direction = directions[random];
+      let other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+      if (other) {
+        cell.walls[cell.getWallByDirection(direction)] = true;
+        other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
+        break;
+      }
+      directions.splice(random, 1);
+    }
+  }
+}
+
 function prim(grid) {
   let visited = new Set;
   let values = Object.values(grid);
@@ -443,8 +476,8 @@ function prim(grid) {
     if (!visited.has(cell)) {
       let opposite = cell.getOpposite(direction);
       cell.walls[cell.getWallByDirection(opposite)] = true;
-      let next = getNeighbor(cell, cell.getTranslations()[opposite], grid);
-      next.walls[next.getWallByDirection(direction)] = true;
+      let other = getNeighbor(cell, cell.getTranslations()[opposite], grid);
+      other.walls[other.getWallByDirection(direction)] = true;
       visited.add(cell);
     }
     for (let neighbor of getNeighbors(cell, grid, visited)) {
@@ -487,9 +520,9 @@ function recursiveDivision(grid) {
       if (width < length || (width == length && Math.round(Math.random()))) {
         let path = x1 + Math.floor(Math.random() * width);
         let z = z1 + Math.floor(Math.random() * (length - 1));
-        for (let i = x1; i < x1 + width; i++) {
-          if (i != path) {
-            let cell = grid[i + ",0," + z];
+        for (let x = x1; x < x1 + width; x++) {
+          if (x != path) {
+            let cell = grid[x + ",0," + z];
             cell.walls[1] = false;
             getNeighbor(cell, cell.getTranslations()[1], grid).walls[3] = false;
           }
@@ -499,9 +532,9 @@ function recursiveDivision(grid) {
       } else {
         let path = z1 + Math.floor(Math.random() * length);
         let x = x1 + Math.floor(Math.random() * (width - 1));
-        for (let i = z1; i < z1 + length; i++) {
-          if (i != path) {
-            let cell = grid[x + ",0," + i];
+        for (let z = z1; z < z1 + length; z++) {
+          if (z != path) {
+            let cell = grid[x + ",0," + z];
             cell.walls[0] = false;
             getNeighbor(cell, cell.getTranslations()[0], grid).walls[2] = false;
           }
@@ -572,7 +605,8 @@ function generate() {
   ySize = ySizeElem.disabled ? 1 : parseInt(ySizeElem.value);
   zSize = parseInt(zSizeElem.value);
   horizontalBias = parseFloat(horizontalBiasElem.value);
-  newestBias = parseFloat(newestBiasElem.value);
+  growingTreeIndex = parseFloat(growingTreeIndexElem.value);
+  indexBias = parseFloat(indexBiasElem.value);
   sideLength = parseInt(sideLengthElem.value);
   thickness = parseInt(thicknessElem.value);
 
@@ -658,10 +692,10 @@ function generate() {
   let start = new Date().getTime();
 
   let grid = {};
-  for (let i = 0; i < xSize; i++) {
-    for (let j = 0; j < ySize; j++) {
-      for (let k = 0; k < zSize; k++) {
-        grid[i + "," + j + "," + k] = this.createCell(i, j, k);
+  for (let x = 0; x < xSize; x++) {
+    for (let y = 0; y < ySize; y++) {
+      for (let z = 0; z < zSize; z++) {
+        grid[x + "," + y + "," + z] = this.createCell(x, y, z);
       }
     }
   }
@@ -680,10 +714,10 @@ function generate() {
   context.fill();
   context.fillStyle = "#000000"
 
-  for (let i = 0; i < xSize; i++) {
-    for (let j = 0; j < ySize; j++) {
-      for (let k = 0; k < zSize; k++) {
-        let cell = grid[i + "," + j + "," + k];
+  for (let x = 0; x < xSize; x++) {
+    for (let y = 0; y < ySize; y++) {
+      for (let z = 0; z < zSize; z++) {
+        let cell = grid[x + "," + y + "," + z];
         cell.draw(this.drawData(cell));
       }
     }
@@ -698,35 +732,39 @@ function generate() {
 
 function algorithmChange() {
   cellShapeElem.disabled = false;
+  cellShapeElem.options[1].disabled = false;
+  cellShapeElem.options[5].disabled = false;
   horizontalBiasElem.disabled = true;
-  newestBiasElem.disabled = true;
+  growingTreeIndexElem.disabled = true;
+  indexBiasElem.disabled = true;
   switch (algorithmElem.value) {
     case "eller":
-      cellShapeElem.value = "orthogonal";
+    case "recursiveDivision":
+    case "sidewinder":
       cellShapeElem.disabled = true;
-      ySizeElem.disabled = true;
+      cellShapeElem.value = "orthogonal";
+      cellShapeChange();
       horizontalBiasElem.disabled = false;
       break;
     case "growingTree":
-      newestBiasElem.disabled = false;
+      indexBiasElem.disabled = false;
+      growingTreeIndexElem.disabled = false;
       break;
-    case "recursiveDivision":
-      cellShapeElem.value = "orthogonal";
-      cellShapeElem.disabled = true;
-      ySizeElem.disabled = true;
+    case "nAryTree":
+      cellShapeElem.options[1].disabled = true;
+      cellShapeElem.options[5].disabled = true;
       break;
-    case "sidewinder":
-      cellShapeElem.value = "orthogonal";
-      cellShapeElem.disabled = true;
-      ySizeElem.disabled = true;
-      horizontalBiasElem.disabled = false;
-      break;
+  }
+  if ((cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") ||
+    (cellShapeElem.options[5].disabled && cellShapeElem.value == "3d")) {
+    cellShapeElem.value = "defaultShape";
+    cellShapeChange();
   }
 }
 
-function shapeChange() {
+function cellShapeChange() {
   ySizeElem.disabled = true;
-  if (shape.value == "3d") {
+  if (cellShapeElem.value == "3d") {
     ySizeElem.disabled = false;
   }
 }

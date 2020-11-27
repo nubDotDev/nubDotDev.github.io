@@ -14,14 +14,15 @@
     <option value="growingTree">Growing Tree</option>
     <option value="huntAndKill">Hunt and Kill</option>
     <option value="kruskal">Kruskal</option>
+    <option value="nAryTree">N-Ary Tree</option>
     <option value="prim">Prim</option>
     <option value="recursiveBacktracking">Recursive Backtracking</option>
     <option value="recursiveDivision">Recursive Division</option>
     <option value="sidewinder">Sidewinder</option>
     <option value="wilson">Wilson</option>
   </select>
-  <select name="shape" id="shape" onchange="shapeChange()">
-    <option value="defaultShape">--Shape--</option>
+  <select name="cellShape" id="cellShape" onchange="cellShapeChange()">
+    <option value="defaultShape">--Cell Shape--</option>
     <option value="delta">Delta (Triangles)</option>
     <option value="orthogonal">Orthogonal (Squares)</option>
     <option value="sigma">Sigma (Hexagons)</option>
@@ -29,12 +30,13 @@
     <option value="3d">3D (Cubes)</option>
   </select>
   <br>
-  <input type="number" min="1" name="x" placeholder="Width (cells)" id="x">
-  <input type="number" min="1" name="y" placeholder="Height (cells)" id="y" disabled>
-  <input type="number" min="1" name="z" placeholder="Length (cells)" id="z">
+  <input type="number" min="1" name="xSize" placeholder="Width (cells)" id="xSize">
+  <input type="number" min="1" name="ySize" placeholder="Height (cells)" id="ySize" disabled>
+  <input type="number" min="1" name="zSize" placeholder="Length (cells)" id="zSize">
   <br>
   <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias (0-1)" id="horizontalBias" disabled>
-  <input type="number" min="0" max="1" step="any" name="newestBias" placeholder="Newest bias (0-1)" id="newestBias" disabled>
+  <input type="number" min="0" max="1" step="any" name="growingTreeIndex" placeholder="Growing tree index (0-1)" id="growingTreeIndex" disabled>
+  <input type="number" min="0" max="1" step="any" name="indexBias" placeholder="Index bias (0-1)" id="indexBias" disabled>
   <br>
   <input type="number" min="1" name="sideLength" placeholder="Side length (pixels)" id="sideLength">
   <input type="number" min="1" name="thickness" placeholder="Line thickness (pixels)" id="thickness">
