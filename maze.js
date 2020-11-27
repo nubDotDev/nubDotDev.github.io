@@ -697,10 +697,14 @@ function generate() {
 }
 
 function algorithmChange() {
+  cellShapeElem.disabled = false;
+  horizontalBiasElem.disabled = true;
+  newestBiasElem.disabled = true;
   switch (algorithmElem.value) {
     case "eller":
       cellShapeElem.value = "orthogonal";
       cellShapeElem.disabled = true;
+      ySizeElem.disabled = true;
       horizontalBiasElem.disabled = false;
       break;
     case "growingTree":
@@ -709,31 +713,14 @@ function algorithmChange() {
     case "recursiveDivision":
       cellShapeElem.value = "orthogonal";
       cellShapeElem.disabled = true;
+      ySizeElem.disabled = true;
       break;
     case "sidewinder":
       cellShapeElem.value = "orthogonal";
       cellShapeElem.disabled = true;
+      ySizeElem.disabled = true;
       horizontalBiasElem.disabled = false;
       break;
-    default:
-      cellShapeElem.disabled = false;
-      horizontalBiasElem.disabled = true;
-      newestBiasElem.disabled = true;
-      break;
-  }
-  if (algorithmElem.value == "eller") {
-    cellShapeElem.value = "orthogonal";
-    cellShapeElem.disabled = true;
-    horizontalBiasElem.disabled = false;
-  }
-  if (algorithmElem.value == "recursiveDivision") {
-    cellShapeElem.value = "orthogonal";
-    cellShapeElem.disabled = true;
-  }
-  if (algorithmElem.value == "sidewinder") {
-    cellShapeElem.value = "orthogonal";
-    cellShapeElem.disabled = true;
-    horizontalBiasElem.disabled = false;
   }
 }
 
