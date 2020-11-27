@@ -11,6 +11,7 @@
     <option value="defaultAlgorithm">--Algorithm--</option>
     <option value="aldousBroder">Aldous Broder</option>
     <option value="eller">Eller</option>
+    <option value="growingTree">Growing Tree</option>
     <option value="huntAndKill">Hunt and Kill</option>
     <option value="kruskal">Kruskal</option>
     <option value="prim">Prim</option>
@@ -27,12 +28,17 @@
     <option value="upsilon">Upsilon (Octogons + Squares)</option>
     <option value="3d">3D (Cubes)</option>
   </select>
+  <br>
   <input type="number" min="1" name="x" placeholder="Width (cells)" id="x">
-  <input type="number" min="1" name="y" placeholder="Height (cells)" id="y" value=1 disabled>
+  <input type="number" min="1" name="y" placeholder="Height (cells)" id="y" disabled>
   <input type="number" min="1" name="z" placeholder="Length (cells)" id="z">
-  <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias (0-1)" id="horizontalBias" value="0.5" disabled>
+  <br>
+  <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias (0-1)" id="horizontalBias" disabled>
+  <input type="number" min="0" max="1" step="any" name="newestBias" placeholder="Newest bias (0-1)" id="newestBias" disabled>
+  <br>
   <input type="number" min="1" name="sideLength" placeholder="Side length (pixels)" id="sideLength">
   <input type="number" min="1" name="thickness" placeholder="Line thickness (pixels)" id="thickness">
+  <br>
   <input type="button" name="generate" value="Generate" onclick="generate()" id="generate">
   <br><br>
   <canvas id="maze"></canvas>

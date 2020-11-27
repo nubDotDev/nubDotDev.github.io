@@ -1,16 +1,17 @@
 const SQRT3 = Math.sqrt(3);
 
+let algorithmElem = document.getElementById("algorithm");
+let cellShapeElem = document.getElementById("shape");
 let xSizeElem = document.getElementById("x");
 let ySizeElem = document.getElementById("y");
 let zSizeElem = document.getElementById("z");
 let horizontalBiasElem = document.getElementById("horizontalBias");
+let newestBiasElem = document.getElementById("newestBias");
 let sideLengthElem = document.getElementById("sideLength");
 let thicknessElem = document.getElementById("thickness");
-let cellShapeElem = document.getElementById("shape");
-let algorithmElem = document.getElementById("algorithm");
 let canvasElem = document.getElementById("maze");
 let context = canvasElem.getContext("2d");
-let xSize, ySize, zSize, horizontalBias, sideLength, thickness, cellShape, algorithm;
+let algorithm, cellShape, xSize, ySize, zSize, horizontalBias, newestBias, sideLength, thickness;
 
 function Cell(x, y, z, wallCount) {
   this.x = x;
@@ -352,6 +353,26 @@ function eller(grid) {
   }
 }
 
+function growingTree(grid) {
+  let values = Object.values(grid);
+  let maze = [values[Math.floor(Math.random() * values.length)]];
+  let visited = new Set(maze);
+  while (maze.length > 0) {
+    let random = Math.floor((1 - newestBias) * Math.random() * maze.length + newestBias * (maze.length - 1));
+    let cell = maze[random];
+    let neighbors = getNeighbors(cell, grid, visited);
+    if (neighbors.length == 0) {
+      maze.splice(random, 1);
+    } else {
+      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      cell.walls[cell.getWallByDirection(direction)] = true;
+      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      maze.push(next);
+      visited.add(next);
+    }
+  }
+}
+
 function huntAndKill(grid) {
   let values = Object.values(grid);
   let current = values[Math.floor(Math.random() * values.length)];
@@ -545,14 +566,15 @@ function wilson(grid) {
 }
 
 function generate() {
+  algorithm = algorithmElem.value;
+  cellShape = cellShapeElem.value;
   xSize = parseInt(xSizeElem.value);
-  ySize = parseInt(ySizeElem.value);
+  ySize = ySizeElem.disabled ? 1 : parseInt(ySizeElem.value);
   zSize = parseInt(zSizeElem.value);
   horizontalBias = parseFloat(horizontalBiasElem.value);
+  newestBias = parseFloat(newestBiasElem.value);
   sideLength = parseInt(sideLengthElem.value);
   thickness = parseInt(thicknessElem.value);
-  cellShape = cellShapeElem.value;
-  algorithm = algorithmElem.value;
 
   switch (cellShape) {
     case "delta":
@@ -647,7 +669,6 @@ function generate() {
   if (algorithm != "defaultAlgorithm") {
     eval(algorithm)(grid);
   }
-
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
 
@@ -676,8 +697,30 @@ function generate() {
 }
 
 function algorithmChange() {
-  cellShapeElem.disabled = false;
-  horizontalBiasElem.disabled = true;
+  switch (algorithmElem.value) {
+    case "eller":
+      cellShapeElem.value = "orthogonal";
+      cellShapeElem.disabled = true;
+      horizontalBiasElem.disabled = false;
+      break;
+    case "growingTree":
+      newestBiasElem.disabled = false;
+      break;
+    case "recursiveDivision":
+      cellShapeElem.value = "orthogonal";
+      cellShapeElem.disabled = true;
+      break;
+    case "sidewinder":
+      cellShapeElem.value = "orthogonal";
+      cellShapeElem.disabled = true;
+      horizontalBiasElem.disabled = false;
+      break;
+    default:
+      cellShapeElem.disabled = false;
+      horizontalBiasElem.disabled = true;
+      newestBiasElem.disabled = true;
+      break;
+  }
   if (algorithmElem.value == "eller") {
     cellShapeElem.value = "orthogonal";
     cellShapeElem.disabled = true;
@@ -695,11 +738,9 @@ function algorithmChange() {
 }
 
 function shapeChange() {
+  ySizeElem.disabled = true;
   if (shape.value == "3d") {
     ySizeElem.disabled = false;
-  } else {
-    ySizeElem.value = 1;
-    ySizeElem.disabled = true;
   }
 }
 
