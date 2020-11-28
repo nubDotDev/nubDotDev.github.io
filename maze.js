@@ -1,17 +1,17 @@
 const SQRT3 = Math.sqrt(3);
 
-let algorithmElem = document.getElementById("algorithm");
-let cellShapeElem = document.getElementById("cellShape");
-let xSizeElem = document.getElementById("xSize");
-let ySizeElem = document.getElementById("ySize");
-let zSizeElem = document.getElementById("zSize");
-let horizontalBiasElem = document.getElementById("horizontalBias");
-let growingTreeIndexElem = document.getElementById("growingTreeIndex");
-let indexBiasElem = document.getElementById("indexBias");
-let sideLengthElem = document.getElementById("sideLength");
-let thicknessElem = document.getElementById("thickness");
-let canvasElem = document.getElementById("maze");
-let context = canvasElem.getContext("2d");
+const algorithmElem = document.getElementById("algorithm");
+const cellShapeElem = document.getElementById("cellShape");
+const xSizeElem = document.getElementById("xSize");
+const ySizeElem = document.getElementById("ySize");
+const zSizeElem = document.getElementById("zSize");
+const horizontalBiasElem = document.getElementById("horizontalBias");
+const growingTreeIndexElem = document.getElementById("growingTreeIndex");
+const indexBiasElem = document.getElementById("indexBias");
+const sideLengthElem = document.getElementById("sideLength");
+const thicknessElem = document.getElementById("thickness");
+const canvasElem = document.getElementById("maze");
+const context = canvasElem.getContext("2d");
 
 let algorithm, cellShape;
 let xSize, ySize, zSize;
@@ -33,10 +33,6 @@ function Cell(x, y, z, wallCount) {
     return [];
   }
 
-  this.getSouthEasterns = function () {
-    return [];
-  }
-
   this.getOpposite = function (direction) {
     return (parseInt(direction) + (this.wallCount / 2)) % this.wallCount;
   }
@@ -47,11 +43,11 @@ function Cell(x, y, z, wallCount) {
 
   this.draw = function (drawData) {
     let [centerX, centerY, angle] = drawData;
-    let radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
+    const radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     for (let i = 0; i < this.wallCount; i++) {
       angle -= Math.PI * 2 / this.wallCount;
-      let toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
+      const toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
       toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     }
   }
@@ -61,56 +57,50 @@ function QuadCell(x, z) {
   Cell.call(this, x, 0, z, 4);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 0, 1],
-      [-1, 0, 0],
-      [0, 0, -1]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0, 1];
+    return QuadCell.translations;
   }
 }
+
+QuadCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1]
+];
 
 function BottomHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 1],
-      [0, 0, 1],
-      [-1, 0, 1],
-      [-1, 0, 0],
-      [0, 0, -1],
-      [1, 0, 0]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0, 1, 5];
+    return BottomHexCell.translations;
   }
 }
+
+BottomHexCell.translations = [
+  [1, 0, 1],
+  [0, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1],
+  [1, 0, 0]
+];
 
 function TopHexCell(x, z) {
   Cell.call(this, x, 0, z, 6);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 0, 1],
-      [-1, 0, 0],
-      [-1, 0, -1],
-      [0, 0, -1],
-      [1, 0, -1]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0, 1];
+    return TopHexCell.translations;
   }
 }
+
+TopHexCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [-1, 0, -1],
+  [0, 0, -1],
+  [1, 0, -1]
+];
 
 function getTriOpposite(direction) {
   return -1 * (parseInt(direction) - 1) + 1;
@@ -120,33 +110,23 @@ function UpwardTriCell(x, z) {
   Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 0, 1],
-      [-1, 0, 0]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0, 1];
+    return UpwardTriCell.translations;
   }
 
   this.getOpposite = getTriOpposite;
 }
 
+UpwardTriCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0]
+];
+
 function DownwardTriCell(x, z) {
   Cell.call(this, x, 0, z, 3);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 0, -1],
-      [-1, 0, 0]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0];
+    return DownwardTriCell.translations
   }
 
   this.getOpposite = getTriOpposite;
@@ -163,28 +143,21 @@ function DownwardTriCell(x, z) {
   }
 }
 
+DownwardTriCell.translations = [
+  [1, 0, 0],
+  [0, 0, -1],
+  [-1, 0, 0]
+];
+
 function OctCell(x, z) {
   Cell.call(this, x, 0, z, 8);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 0, 1],
-      [-1, 0, 0],
-      [0, 0, -1],
-      [1, 0, 1],
-      [-1, 0, 1],
-      [-1, 0, -1],
-      [1, 0, -1]
-    ];
-  }
-
-  this.getSouthEasterns = function () {
-    return [0, 1, 4];
+    return OctCell.translations
   }
 
   this.getOpposite = function (direction) {
-    let d = parseInt(direction);
+    const d = parseInt(direction);
     if (d <= 3) {
       return (d + 2) % 4;
     }
@@ -199,18 +172,22 @@ function OctCell(x, z) {
   }
 }
 
+OctCell.translations = [
+  [1, 0, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, 0, -1],
+  [1, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, -1],
+  [1, 0, -1]
+];
+
 function CubeCell(x, y, z) {
   Cell.call(this, x, y, z, 6);
 
   this.getTranslations = function () {
-    return [
-      [1, 0, 0],
-      [0, 1, 0],
-      [0, 0, 1],
-      [-1, 0, 0],
-      [0, -1, 0],
-      [0, 0, -1]
-    ];
+    return CubeCell.translations
   }
 
   this.getWallByDirection = function (direction) {
@@ -232,15 +209,12 @@ function CubeCell(x, y, z) {
 
   this.draw = function (drawData) {
     let [centerX, centerY, angle] = drawData;
-    let radius = sideLength / Math.sin(Math.PI / 4) / 2;
+    const radius = sideLength / Math.sin(Math.PI / 4) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     for (let i = 0; i < 4; i++) {
       angle -= Math.PI / 2;
-      if (!this.walls[i]) {
-        context.lineTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-      } else {
-        context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-      }
+      const toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
+      toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     }
     if (this.walls[4]) {
       context.moveTo(centerX + sideLength * 3 / 8, centerY - sideLength / 8);
@@ -255,6 +229,15 @@ function CubeCell(x, y, z) {
   }
 }
 
+CubeCell.translations = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, -1, 0],
+  [0, 0, -1]
+];
+
 function DisjointSet() {
   this.universe = new WeakMap();
 
@@ -266,7 +249,7 @@ function DisjointSet() {
     if (set == this.universe.get(set)) {
       return set;
     }
-    let root = this.find(this.universe.get(set));
+    const root = this.find(this.universe.get(set));
     this.universe.set(set, root);
     return root;
   }
@@ -287,27 +270,30 @@ function getNeighbor(cell, translation, grid) {
 }
 
 function getNeighbors(cell, grid, visited, inverse) {
-  let neighbors = [];
-  for (let [direction, translation] of Object.entries(cell.getTranslations())) {
-    let neighbor = getNeighbor(cell, translation, grid);
-    if (neighbor != null && (!inverse == (visited == null || !visited.has(neighbor)))) {
-      neighbors.push([neighbor, direction]);
+  const neighbors = [];
+  for (let i = 0; i < cell.wallCount; i++) {
+    const neighbor = getNeighbor(cell, cell.getTranslations()[i], grid);
+    if (neighbor && (!inverse == (!visited || !visited.has(neighbor)))) {
+      neighbors.push([neighbor, i]);
     }
   }
   return neighbors;
 }
 
+function breakWall(cell, other, direction, build) {
+  cell.walls[cell.getWallByDirection(direction)] = !build;
+  other.walls[other.getWallByDirection(other.getOpposite(direction))] = !build;
+}
+
 function aldousBroder(grid) {
-  let values = Object.values(grid);
-  let current = values[Math.floor(Math.random() * values.length)];
-  let visited = new Set();
-  visited.add(current);
-  while (visited.size < values.length) {
-    let neighbors = getNeighbors(current, grid);
-    let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+  const cells = Object.values(grid);
+  let current = cells[Math.floor(Math.random() * cells.length)];
+  const visited = new Set([current]);
+  while (visited.size < cells.length) {
+    const neighbors = getNeighbors(current, grid);
+    const [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
     if (!visited.has(next)) {
-      current.walls[current.getWallByDirection(direction)] = true;
-      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      breakWall(current, next, direction);
       visited.add(next);
     }
     current = next;
@@ -317,13 +303,13 @@ function aldousBroder(grid) {
 function eller(grid) {
   let prevRow = new DisjointSet();
   for (let z = 0; z < zSize; z++) {
-    let currentRow = new DisjointSet();
-    let passages = new WeakMap();
+    const currentRow = new DisjointSet();
+    const passages = new WeakMap();
     for (let x = 0; x < xSize; x++) {
-      let cell = grid[x + ",0," + z];
+      const cell = grid[x + ",0," + z];
       if (prevRow.universe.has(cell)) {
-        let root = prevRow.find(cell);
-        let newRoot = passages.get(root);
+        const root = prevRow.find(cell);
+        const newRoot = passages.get(root);
         if (newRoot) {
           currentRow.universe.set(cell, newRoot);
         } else {
@@ -334,17 +320,16 @@ function eller(grid) {
         currentRow.addSet(cell);
       }
     }
-    let sets = [[]];
+    const sets = [[]];
     let k = 0;
-    let isLastRow = z == zSize - 1;
+    const isLastRow = z == zSize - 1;
     for (let x = 0; x < xSize; x++) {
-      let current = grid[x + ",0," + z];
+      const current = grid[x + ",0," + z];
       sets[k].push(current);
       if ((isLastRow || Math.random() < horizontalBias) && x < xSize - 1) {
-        let next = grid[(x + 1) + ",0," + z];
+        const next = grid[(x + 1) + ",0," + z];
         if (currentRow.union(current, next)) {
-          current.walls[0] = true;
-          next.walls[2] = true;
+          breakWall(current, next, 0);
         }
       } else {
         k++;
@@ -355,13 +340,12 @@ function eller(grid) {
       return;
     }
     for (let set of sets) {
-      let index = Math.floor(Math.random() * set.length);
+      const index = Math.floor(Math.random() * set.length);
       for (let i = 0; i < set.length; i++) {
         if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
-          set[i].walls[1] = true;
-          let cell = getNeighbor(set[i], [0, 0, 1], grid);
-          cell.walls[3] = true;
-          currentRow.universe.set(cell, set[i]);
+          const other = getNeighbor(set[i], [0, 0, 1], grid);
+          breakWall(set[i], other, 1);
+          currentRow.universe.set(other, set[i]);
         }
       }
     }
@@ -370,19 +354,18 @@ function eller(grid) {
 }
 
 function growingTree(grid) {
-  let values = Object.values(grid);
-  let maze = [values[Math.floor(Math.random() * values.length)]];
-  let visited = new Set(maze);
+  const cells = Object.values(grid);
+  const maze = [cells[Math.floor(Math.random() * cells.length)]];
+  const visited = new Set(maze);
   while (maze.length > 0) {
-    let random = Math.floor((1 - indexBias) * Math.random() * growingTreeIndex * maze.length + indexBias * (growingTreeIndex * (maze.length - 1)));
-    let cell = maze[random];
-    let neighbors = getNeighbors(cell, grid, visited);
+    const random = Math.floor((1 - indexBias) * Math.random() * maze.length + indexBias * growingTreeIndex * (maze.length - 1));
+    const cell = maze[random];
+    const neighbors = getNeighbors(cell, grid, visited);
     if (neighbors.length == 0) {
       maze.splice(random, 1);
     } else {
-      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
-      cell.walls[cell.getWallByDirection(direction)] = true;
-      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      const [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      breakWall(cell, next, direction);
       maze.push(next);
       visited.add(next);
     }
@@ -390,27 +373,24 @@ function growingTree(grid) {
 }
 
 function huntAndKill(grid) {
-  let values = Object.values(grid);
-  let current = values[Math.floor(Math.random() * values.length)];
-  let visited = new Set();
-  visited.add(current);
-  while (visited.size < values.length) {
-    let neighbors = getNeighbors(current, grid, visited);
+  const cells = Object.values(grid);
+  let current = cells[Math.floor(Math.random() * cells.length)];
+  const visited = new Set([current]);
+  while (visited.size < cells.length) {
+    const neighbors = getNeighbors(current, grid, visited);
     if (neighbors.length > 0) {
-      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
-      current.walls[current.getWallByDirection(direction)] = true;
-      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      const [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      breakWall(current, next, direction);
       current = next;
       visited.add(current);
     } else {
-      for (let cell of values) {
+      for (let cell of cells) {
         if (!visited.has(cell)) {
-          let neighbors = getNeighbors(cell, grid, visited, true);
+          const neighbors = getNeighbors(cell, grid, visited, true);
           if (neighbors.length > 0) {
+            const [other, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+            breakWall(cell, other, direction);
             current = cell;
-            let [other, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
-            current.walls[current.getWallByDirection(direction)] = true;
-            other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
             visited.add(current);
             break;
           }
@@ -421,38 +401,34 @@ function huntAndKill(grid) {
 }
 
 function kruskal(grid) {
-  let disjointSet = new DisjointSet();
-  let walls = [];
+  const disjointSet = new DisjointSet();
+  const walls = [];
   for (let cell of Object.values(grid)) {
     disjointSet.addSet(cell);
-    for (let direction of Object.keys(cell.getTranslations())) {
+    for (let direction = 0; direction < cell.wallCount; direction++) {
       walls.push([cell, direction]);
     }
   }
   while (walls.length > 0) {
-    let random = Math.floor(Math.random() * walls.length);
-    let [cell, direction] = walls[random];
-    walls.splice(random, 1);
-    let other = getNeighbor(cell, cell.getTranslations()[direction], grid);
-    if (other != null) {
-      if (disjointSet.union(cell, other)) {
-        cell.walls[cell.getWallByDirection(direction)] = true;
-        other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
-      }
+    const random = Math.floor(Math.random() * walls.length);
+    const [cell, direction] = walls[random];
+    const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+    if (other && disjointSet.union(cell, other)) {
+      breakWall(cell, other, direction);
     }
+    walls.splice(random, 1);
   }
 }
 
 function nAryTree(grid) {
   for (let cell of Object.values(grid)) {
-    let directions = cell.getSouthEasterns();
+    const directions = nAryTree.getSouthEasterns(cell);
     while (directions.length > 0) {
-      let random = Math.floor(Math.random() * directions.length);
-      let direction = directions[random];
-      let other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+      const random = Math.floor(Math.random() * directions.length);
+      const direction = directions[random];
+      const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
       if (other) {
-        cell.walls[cell.getWallByDirection(direction)] = true;
-        other.walls[other.getWallByDirection(other.getOpposite(direction))] = true;
+        breakWall(cell, other, direction);
         break;
       }
       directions.splice(random, 1);
@@ -460,44 +436,73 @@ function nAryTree(grid) {
   }
 }
 
-function prim(grid) {
-  let visited = new Set;
-  let values = Object.values(grid);
-  let start = values[Math.floor(Math.random() * values.length)];
-  visited.add(start);
-  let frontier = [];
-  for (let neighbor of getNeighbors(start, grid)) {
-    frontier.push(neighbor);
+nAryTree.getSouthEasterns = function (cell) {
+  switch (cell.constructor.name) {
+    case "QuadCell":
+      return [0, 1];
+    case "BottomHexCell":
+      return [0, 1, 5];
+    case "TopHexCell":
+      return [0, 1];
+    case "OctCell":
+      return [0, 1, 4];
   }
-  while (frontier.length > 0) {
-    let random = Math.floor(Math.random() * frontier.length);
-    let [cell, direction] = frontier[random];
-    frontier.splice(random, 1);
-    if (!visited.has(cell)) {
-      let opposite = cell.getOpposite(direction);
-      cell.walls[cell.getWallByDirection(opposite)] = true;
-      let other = getNeighbor(cell, cell.getTranslations()[opposite], grid);
-      other.walls[other.getWallByDirection(direction)] = true;
-      visited.add(cell);
+}
+
+function prim(grid) {
+  const cells = Object.values(grid);
+  let wallCount = 0;
+  for (let cell of cells) {
+    wallCount += cell.wallCount;
+  }
+  const weights = new WeakMap();
+  const range = [...Array(wallCount).keys()];
+  for (let cell of cells) {
+    const cellWeights = [];
+    for (let direction = 0; direction < cell.wallCount; direction++) {
+      const random = Math.floor(Math.random() * range.length);
+      cellWeights[direction] = range[random];
+      range.splice(random, 1);
     }
-    for (let neighbor of getNeighbors(cell, grid, visited)) {
-      frontier.push(neighbor);
+    weights.set(cell, cellWeights);
+  }
+  const start = cells[Math.floor(Math.random() * cells.length)];
+  const visited = new Set([start]);
+  const frontier = Array(wallCount);
+  const startWeights = weights.get(start);
+  for (let i = 0; i < startWeights.length; i++) {
+    frontier[startWeights[i]] = [start, i];
+  }
+  while (visited.size < cells.length) {
+    for (let i = frontier.length - 1; i >= 0; i--) {
+      if (frontier[i]) {
+        const [cell, direction] = frontier[i];
+        const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+        if (other && !visited.has(other)) {
+          breakWall(cell, other, direction);
+          const otherWeights = weights.get(other);
+          for (let i = 0; i < otherWeights.length; i++) {
+            frontier[otherWeights[i]] = [other, i];
+          }
+          visited.add(other);
+        }
+        frontier[i] = 0;
+        break;
+      }
     }
   }
 }
 
 function recursiveBacktracking(grid) {
-  let values = Object.values(grid);
-  let current = values[Math.floor(Math.random() * values.length)];
-  let visited = new Set();
-  visited.add(current);
-  let backtrack = [];
-  while (visited.size < values.length) {
-    let neighbors = getNeighbors(current, grid, visited);
+  const cells = Object.values(grid);
+  let current = cells[Math.floor(Math.random() * cells.length)];
+  const visited = new Set([current]);
+  const backtrack = [];
+  while (visited.size < cells.length) {
+    const neighbors = getNeighbors(current, grid, visited);
     if (neighbors.length > 0) {
-      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
-      current.walls[current.getWallByDirection(direction)] = true;
-      next.walls[next.getWallByDirection(next.getOpposite(direction))] = true;
+      const [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      breakWall(current, next, direction);
       backtrack.push(current);
       current = next;
       visited.add(current);
@@ -515,28 +520,26 @@ function recursiveDivision(grid) {
     cell.walls[3] = cell.z != 0;
   }
 
-  let divide = function (x1, z1, width, length) {
+  const divide = function (x1, z1, width, length) {
     if (width > 1 && length > 1) {
       if (width < length || (width == length && Math.round(Math.random()))) {
-        let path = x1 + Math.floor(Math.random() * width);
-        let z = z1 + Math.floor(Math.random() * (length - 1));
+        const path = x1 + Math.floor(Math.random() * width);
+        const z = z1 + Math.floor(Math.random() * (length - 1));
         for (let x = x1; x < x1 + width; x++) {
           if (x != path) {
-            let cell = grid[x + ",0," + z];
-            cell.walls[1] = false;
-            getNeighbor(cell, cell.getTranslations()[1], grid).walls[3] = false;
+            const cell = grid[x + ",0," + z];
+            breakWall(cell, getNeighbor(cell, cell.getTranslations()[1], grid), 1, true);
           }
         }
         divide(x1, z1, width, z - z1 + 1);
         divide(x1, z + 1, width, length - (z - z1 + 1));
       } else {
-        let path = z1 + Math.floor(Math.random() * length);
-        let x = x1 + Math.floor(Math.random() * (width - 1));
+        const path = z1 + Math.floor(Math.random() * length);
+        const x = x1 + Math.floor(Math.random() * (width - 1));
         for (let z = z1; z < z1 + length; z++) {
           if (z != path) {
-            let cell = grid[x + ",0," + z];
-            cell.walls[0] = false;
-            getNeighbor(cell, cell.getTranslations()[0], grid).walls[2] = false;
+            const cell = grid[x + ",0," + z];
+            breakWall(cell, getNeighbor(cell, cell.getTranslations()[0], grid), 0, true);
           }
         }
         divide(x1, z1, x - x1 + 1, length);
@@ -556,16 +559,14 @@ function sidewinder(grid) {
   for (let z = 1; z < zSize; z++) {
     let run = [];
     current = grid["0,0," + z];
-    while (current != null) {
-      let next = getNeighbor(current, [1, 0, 0], grid);
+    while (current) {
+      const next = getNeighbor(current, [1, 0, 0], grid);
       run.push(current);
       if (Math.random() < horizontalBias && current.x != xSize - 1) {
-        current.walls[0] = true;
-        next.walls[2] = true;
+        breakWall(current, next, 0);
       } else {
-        let pop = run[Math.floor(Math.random() * run.length)];
-        pop.walls[3] = true;
-        getNeighbor(pop, [0, 0, -1], grid).walls[1] = true;
+        const cell = run[Math.floor(Math.random() * run.length)];
+        breakWall(cell, getNeighbor(cell, [0, 0, -1], grid), 3);
         run = [];
       }
       current = next;
@@ -574,26 +575,26 @@ function sidewinder(grid) {
 }
 
 function wilson(grid) {
-  let values = Object.values(grid);
-  let notMaze = new Set(values);
-  notMaze.delete(values[Math.floor(Math.random() * values.length)]);
+  const cells = Object.values(grid);
+  const notMaze = new Set(cells);
+  notMaze.delete(cells[Math.floor(Math.random() * cells.length)]);
   while (notMaze.size > 0) {
-    let path = new WeakMap();
-    let start = values[Math.floor(Math.random() * values.length)];
+    const run = new WeakMap();
+    const start = cells[Math.floor(Math.random() * cells.length)];
     let current = start;
     while (notMaze.has(current)) {
-      let neighbors = getNeighbors(current, grid);
-      let [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
-      path.set(current, direction);
+      const neighbors = getNeighbors(current, grid);
+      const [next, direction] = neighbors[Math.floor(Math.random() * neighbors.length)];
+      run.set(current, direction);
       current = next;
     }
     current = start;
     while (notMaze.has(current)) {
       notMaze.delete(current);
-      let direction = path.get(current);
-      current.walls[current.getWallByDirection(direction)] = true;
-      current = getNeighbor(current, current.getTranslations()[direction], grid);
-      current.walls[current.getWallByDirection(current.getOpposite(direction))] = true;
+      const direction = run.get(current);
+      const next = getNeighbor(current, current.getTranslations()[direction], grid);
+      breakWall(current, next, direction);
+      current = next;
     }
   }
 }
@@ -667,7 +668,7 @@ function generate() {
         return new OctCell(x, z);
       }
       this.drawData = function (cell) {
-        let offset = 0.5 * sideLength / Math.SQRT2;
+        const offset = 0.5 * sideLength / Math.SQRT2;
         return [
           (cell.x + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
           (cell.z + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
@@ -691,7 +692,7 @@ function generate() {
 
   let start = new Date().getTime();
 
-  let grid = {};
+  const grid = {};
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
       for (let z = 0; z < zSize; z++) {
@@ -717,7 +718,7 @@ function generate() {
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
       for (let z = 0; z < zSize; z++) {
-        let cell = grid[x + "," + y + "," + z];
+        const cell = grid[x + "," + y + "," + z];
         cell.draw(this.drawData(cell));
       }
     }
@@ -726,8 +727,6 @@ function generate() {
   context.stroke();
 
   console.log("Draw time: " + (new Date().getTime() - start));
-
-  document.getElementById("download").style.display = "block";
 }
 
 function algorithmChange() {
@@ -739,12 +738,12 @@ function algorithmChange() {
   indexBiasElem.disabled = true;
   switch (algorithmElem.value) {
     case "eller":
-    case "recursiveDivision":
     case "sidewinder":
+      horizontalBiasElem.disabled = false;
+    case "recursiveDivision":
       cellShapeElem.disabled = true;
       cellShapeElem.value = "orthogonal";
       cellShapeChange();
-      horizontalBiasElem.disabled = false;
       break;
     case "growingTree":
       indexBiasElem.disabled = false;
@@ -770,6 +769,6 @@ function cellShapeChange() {
 }
 
 function downloadMaze() {
-  let image = canvasElem.toDataURL("maze/png");
+  const image = canvasElem.toDataURL("maze/png");
   document.getElementById("download").href = image;
 }

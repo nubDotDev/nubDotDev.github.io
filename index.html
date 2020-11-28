@@ -34,9 +34,10 @@
   <input type="number" min="1" name="ySize" placeholder="Height (cells)" id="ySize" disabled>
   <input type="number" min="1" name="zSize" placeholder="Length (cells)" id="zSize">
   <br>
-  <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias (0-1)" id="horizontalBias" disabled>
-  <input type="number" min="0" max="1" step="any" name="growingTreeIndex" placeholder="Growing tree index (0-1)" id="growingTreeIndex" disabled>
-  <input type="number" min="0" max="1" step="any" name="indexBias" placeholder="Index bias (0-1)" id="indexBias" disabled>
+  <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias" id="horizontalBias" disabled>
+  <input type="number" min="0" max="1" step="any" name="growingTreeIndex" placeholder="Growing tree index" id="growingTreeIndex" disabled>
+  <input type="number" min="0" max="1" step="any" name="indexBias" placeholder="Index bias" id="indexBias" disabled>
+  Fields in this row can be decimals between 0 and 1 inclusively.
   <br>
   <input type="number" min="1" name="sideLength" placeholder="Side length (pixels)" id="sideLength">
   <input type="number" min="1" name="thickness" placeholder="Line thickness (pixels)" id="thickness">
@@ -44,7 +45,7 @@
   <input type="button" name="generate" value="Generate" onclick="generate()" id="generate">
   <br><br>
   <canvas id="maze"></canvas>
-  <a href="#" class="button" download="maze.png" id="download" onclick="downloadMaze()" style="display: none;">Download</a>
+  <a href="#" class="button" download="maze.png" id="download" onclick="downloadMaze()" style="display: block;">Download</a>
   <script src="maze.js"></script>
 </body>
 </html>
