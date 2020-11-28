@@ -304,18 +304,12 @@ function eller(grid) {
   let prevRow = new DisjointSet();
   for (let z = 0; z < zSize; z++) {
     const currentRow = new DisjointSet();
-    const passages = new WeakMap();
     for (let x = 0; x < xSize; x++) {
       const cell = grid[x + ",0," + z];
       if (prevRow.universe.has(cell)) {
         const root = prevRow.find(cell);
-        const newRoot = passages.get(root);
-        if (newRoot) {
-          currentRow.universe.set(cell, newRoot);
-        } else {
-          currentRow.addSet(cell);
-          passages.set(root, cell);
-        }
+        currentRow.addSet(root);
+        currentRow.universe.set(cell, root);
       } else {
         currentRow.addSet(cell);
       }
@@ -446,6 +440,8 @@ nAryTree.getSouthEasterns = function (cell) {
       return [0, 1];
     case "OctCell":
       return [0, 1, 4];
+    case "CubeCell":
+      return [0, 1, 2];
   }
 }
 
@@ -732,7 +728,6 @@ function generate() {
 function algorithmChange() {
   cellShapeElem.disabled = false;
   cellShapeElem.options[1].disabled = false;
-  cellShapeElem.options[5].disabled = false;
   horizontalBiasElem.disabled = true;
   growingTreeIndexElem.disabled = true;
   indexBiasElem.disabled = true;
@@ -751,11 +746,9 @@ function algorithmChange() {
       break;
     case "nAryTree":
       cellShapeElem.options[1].disabled = true;
-      cellShapeElem.options[5].disabled = true;
       break;
   }
-  if ((cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") ||
-    (cellShapeElem.options[5].disabled && cellShapeElem.value == "3d")) {
+  if (cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") {
     cellShapeElem.value = "defaultShape";
     cellShapeChange();
   }
