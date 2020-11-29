@@ -9,8 +9,7 @@
 
 <body>
   <h1>Maze Info (WIP)</h1>
-  Click <a href="index.html">here</a> to go to the generator.
-  <br><br>
+  <p>Click <a href="index.html">here</a> to go to the maze generator.</p>
   <h2>Table of Contents</h2>
   <nav>
     <ul>
@@ -43,26 +42,26 @@
 
   <div id="algorithms">
     <h2>Algorithms</h2>
-    <p>For all of the following pseudo-code, it is assumed that there is a set containing every cell in the maze
-      starting with none of its walls broken. For a cell to be visited is for it to have at least one of its walls
-      broken or for it to be the starting cell. This can most easily be managed with a set. To connect two adjacent
-      cells is to break the wall that separates them.</p>
+    <p>To better understand the following pseudo-code:</p>
+    <ul>
+      <li>Every cell starts with none of its walls broken.</li>
+      <li>There exists a set containing every cell in the maze.</li>
+      <li>To connect two neighboring cells is to break the wall that separates them.</li>
+      <li>For a cell to be visited is for it to have at least one of its walls broken or for it to be the starting cell.</li>
+    </ul>
 
     <ul>
       <li id="aldousBroder">
         <h3>Aldous Broder</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Randomly choose a cell as the current cell.</li>
-          <li>
-            Randomly choose a neighbor of the current as the next cell.
-            <ol type="i">
-              <li>If the next cell is unvisited, connect it to the current cell.</li>
-            </ol>
-          </li>
-          <li>Set the current cell to the next cell.</li>
-          <li>Repeat 2-3 until every cell is visited.</li>
-        </ol>
+        <pre>
+  Initialize current to a random cell
+  While not every cell is visited
+    Initialize next to a random neighbor of current
+    If next is not visited
+      Connect current and next
+    Set current to next
+        </pre>
       </li>
 
       <li id="eller">
@@ -70,15 +69,25 @@
         <p>This algorithm is one of the fastest on the site, and it allows for mazes of infinite length to be generated
           because it never looks at more than two rows at a time.</p>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>For each cell in the first row, initialize a set containing the cell.</li>
-          <li>Randomly connect horizontally adjacent cells in the current row if they are in different sets and merge
-            their sets.</li>
-          <li>For each set, randomly connect at least one cell in the current row to the cell directly below it.</li>
-          <li>For each cell in the next row, if it is not in a set, initialize a set containing the cell.</li>
-          <li>For each row except the last, repeat 2-4.</li>
-          <li>In the last row, connect all adjacent cells in different sets.</li>
-        </ol>
+        <pre>
+  Initialize sets to an empty disjoint set
+  For each row
+    Delete from sets the data for every cell that is neither a root nor in the row
+    For each cell in the row that is not in sets
+      Add a set containing the cell to sets
+    Initialize current to the leftmost cell in the row
+    While current != the rightmost cell in the row
+      Initialize next to the cell directly to the right of current
+      If find current in sets != find next in sets
+        Randomly or if the row = the bottom row
+          Connect current and next
+          Union current and next in sets
+      Set current to next
+    If the row != the bottom row
+      For each set in sets
+        Randomly at least once
+          Connect a cell from the set in the row and the cell directly below it
+        </pre>
       </li>
 
       <li id="growingTree">
@@ -86,57 +95,53 @@
         <p>This algorithm is particularly intersting because it allows for a result identical to the simplified Prim's
           algorithm, the recursive backtracking algorithm or anywhere in between the two depending on how it is
           configured. Looking at the simplicity of the algorithms pseudo-code, it's flexibility seems almost inevitable.
-          The "growing tree index" field represents which cell the algorithm is biased to pick (0 being the oldest in
-          the tree and 1 being the newest in the tree). The "index bias" field represents how biased the algorithm is to
-          the chosen index (0 being entirely random and 1 being guaranteed). If the index bias is 0, the result is
+          The "index anchor" field represents which cell the algorithm is biased to pick (0 being the oldest in
+          the tree and 1 being the newest in the tree). The "anchor bias" field represents how biased the algorithm is
+          to
+          the chosen anchor (0 being entirely random and 1 being guaranteed). If the anchor bias is 0, the result is
           identical to the simplified Prim's algorithm because a random cell will always be chosen. If both the growing
-          tree index and the index bias are 1, the result is identical to the recursive backtracking algorithm because
+          tree index and the anchor bias are 1, the result is identical to the recursive backtracking algorithm because
           the newest cell will always be chosen, and if the newest cell has no unvisited neighbors, the algorithm
           backtracks to the previous cell.</p>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize a set containing a randomly chosen cell.</li>
-          <li>
-            Choose a cell from the set.
-            <ol type="i">
-              <li>If the cell has no unvisited neighbors, remove it from the set.</li>
-              <li>Otherwise, connect the cell to a randomly chosen unvisited neighbor.</li>
-            </ol>
-          </li>
-          <li>Repeat 2 until the set is empty.</li>
-        </ol>
+        <pre>
+  Initialize maze to a set containing a random cell
+  While maze is not empty
+    Initialize current to a random element of maze
+    If current has an unvisited neighbor
+      Connect current and a random unvisited neighbor of current
+    Else
+      Remove current from maze
+        </pre>
       </li>
 
       <li id="huntAndKill">
         <h3>Hunt and Kill</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Randomly choose a cell as the current cell.</li>
-          <li>If the current cell has an unvisited neighbor, connect the current cell to a randomly chosen unvisited
-            neighbor and make the neighbor the current cell.</li>
-          <li>Repeat 2 until the current cell has no unvisited neighbors.</li>
-          <li>For each cell in some order, if it is unvisited and has a visited neighbor, make it the current cell and
-            connect it to a
-            randomly chosen visited neighbor.</li>
-          <li>Repeat 2-4 until every cell is visited.</li>
-        </ol>
+        <pre>
+  Initialize current to a random cell
+  While not every cell is visited
+    While current has an unvisited neighbor
+      Initialize next to a random unvisited neighbor of current
+      Connect current and next
+      Set current to next
+    For each cell
+      If the cell is unvisited and the cell has a visited neighbor
+        Set current to the cell
+        Connect current and a random visited neighbor
+        Break
+        </pre>
       </li>
 
       <li id="kruskal">
         <h3>Kruskal</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize a set containing every cell wall.</li>
-          <li>For each cell, initialize a set containing the cell.</li>
-          <li>
-            Randomly choose a wall.
-            <ol type="i">
-              <li>If the two cells separated by it are in different sets, connect the
-                cells and merge their sets.</li>
-          </li>
-        </ol>
-      <li>Repeat 3 until there is one cell set remaining.</li>
-      </ol>
+        <pre>
+  Initialize sets to an empty disjoint set
+  Initialize walls to a set containing every cell wall
+  While sets has more than one set
+    Connect the two cells on either side of a randomly popped element of walls
+        </pre>
       </li>
 
       <li id="nAryTree">
@@ -149,96 +154,106 @@
           other cell has no side facing the positive Z direction which would allow for isolated sections of the maze.
         </p>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>For each cell, if possible, connect it to a randomly chosen neighboring cell whose X, Y, and Z coordinates
-            are all greater than or equal to those of the original cell.</li>
-        </ol>
+        <pre>
+  For each cell
+    If possible
+      Connect the cell and a random neighbor of the cell whose coordinates are all >= to those of the cell
+        </pre>
       </li>
 
       <li id="prim">
         <h3>Prim</h3>
+        <p>The Prim's algorithm implemented on this site is the classical Prim's algorithm, which means that every wall
+          has a static weight. In the modified version, every cell has a static weight and a random wall is chosen of
+          the cell with the highest weight every iteration. In the simplified version, there are no static weights, so a
+          random wall is picked every iteration. To see what the simplified version looks like, check the growing
+          tree algorithm.</p>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize a set containing every cell wall.</li>
-          <li>Assign every cell wall a randomly chosen weight.</li>
-          <li>Initialize a frontier set containing the walls of a randomly chosen cell.</li>
-          <li>
-            Choose the wall with the highest weight in the frontier set.
-            <ol type="i">
-              <li>If exactly one of the two cells separated by the wall is unvisited, connect the cells and add the
-                walls of the unvisited cell to the frontier set.</li>
-            </ol>
-          </li>
-          <li>Repeat 4 until every cell is visited.</li>
-        </ol>
+        <pre>
+  Assign every cell wall a random weight
+  Initialize frontier to a set containing the walls of a random cell
+  While not every cell is visited
+    Initialize cell1 and cell2 to the cells separated by the popped element of frontier with the highest weight
+    If cell1 xor cell2 is unvisited
+      Connect cell1 and cell2
+      Add the walls of cell1 and cell2 to frontier
+        </pre>
       </li>
 
       <li id="recursiveBacktracking">
         <h3>Recursive Backtracking</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize an empty stack.</li>
-          <li>Randomly choose a cell as the current cell.</li>
-          <li>Push the current cell to the stack.</li>
-          <li>If the current cell has an unvisited neighbor, connect the current cell to a randomly chosen unvisited
-            neighbor and make it the current cell.</li>
-          <li>Repeat 3-4 until the current cell has no unvisited neighbors.</li>
-          <li>Pop a cell from the stack and make it the current cell.</li>
-          <li>Repeat 3-6 until every cell is visited.</li>
-        </ol>
+        <pre>
+  Initialize backtrack to an empty stack
+  Initialize current to a random cell
+  While not every cell is visited
+    If current has an unvisited neighbor
+      Initialize next to a random unvisited neighbor of current
+      Connect current and next
+      Set current to next
+    Else
+      Pop backtrack and set current to the result
+        </pre>
       </li>
 
       <li id="recursiveDivision">
         <h3>Recursive Division</h3>
+        <p>This algorithm is unique because it is the only algorithm that uses wall building instead of wall breaking.
+          The "index anchor" field represents where in each section the algorithm is biased to make a division (0 being
+          the top or left and 1 being the bottom or right). The "anchor bias" field represents how biased the algorithm
+          is to the chosen anchor (0 being entirely random and 1 being guaranteed).</p>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Break every cell wall.</li>
-          <li>Divide the maze horizontally or vertically at a chosen location (i.e., build every wall along a line).
-          </li>
-          <li>Break a randomly chosen wall on the division.</li>
-          <li>For each of the two newly made sections, if the section is at least two cells wide and two cells long,
-            repeat 2-4 for the section instead of the entire maze.</li>
-        </ol>
+        <pre>
+  Break every cell wall
+  Define divide as a function of a section of the maze
+    Initialize division to a random X or Z coordinate inside the section
+    Build every wall inside the section with the coordinate division
+    Break a random wall inside the section with the coordinate division
+    For each of the two subsections made by the division
+      Call divide on the subsection
+  Call divide on the maze
+        </pre>
       </li>
 
       <li id="sidewinder">
         <h3>Sidewinder</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize an empty set.</li>
-          <li>For each cell in the first row going left to right, connect it to the cell to the right if it exists.</li>
-          <li>
-            For each cell in the next row going left to right, add it to the set and randomly choose to connect it
-            to the cell to the right if it exists.
-            <ol type="i">
-              <li>If the cells were not connected or there is no cell to the right, connect a randomly chosen cell from
-                the set with the cell directly above it and clear the set.</li>
-            </ol>
-          </li>
-          <li>For each remaining row, repeat 3.</li>
-        </ol>
+        <pre>
+  For each row
+    Initialize run to an empty set
+    Initialize current to the leftmost cell in the row
+    While current exists
+      Add current to run
+      Initialize next to the cell directly to the right of current
+      (Randomly or if the row = the top row) and if current != the rightmost cell
+        Connect current and next
+      Else if current != the rightmost cell
+        Connect a random element of run and the cell directly below it
+        Clear run
+      Set current to next
+        </pre>
       </li>
 
       <li id="wilson">
         <h3>Wilson</h3>
         <b>Pseudo-Code:</b>
-        <ol>
-          <li>Initialize a set containing a randomly chosen cell.</li>
-          <li>Initialize an empty map.</li>
-          <li>Randomly choose a cell not in the set as the starting and current cell.</li>
-          <li>
-            Randomly choose a neighbor of the current cell.
-            <ol type="i">
-              <li>Map the current cell to the direction travelled.</li>
-              <li>Make the neighbor the current cell.</li>
-            </ol>
-          </li>
-          <li>Repeat 4 until the current cell is in the set.</li>
-          <li>Set the current cell to the starting cell.</li>
-          <li>Add the current cell to the set and make the neighbor in the mapped direction the current cell.</li>
-          <li>Repeat 7 until the current cell is in the set.</li>
-          <li>Repeat 3-7 until every cell is in the set.</li>
-        </ol>
+        <pre>
+  Initialize maze to a set containing a random cell
+  While not every cell is in maze
+    Initialize directions to an empty map
+    Initialize start to a random cell not in maze
+    Initialize current to start
+    While current is not in maze
+      Initialize next to a random neighbor of current
+      Map current to the direction of next in relation to current in directions
+      Set current to next
+    Set current to start
+    While current is not in maze
+      Add current to maze
+      Initialize next to the neighbor of current in the direction to which current is mapped in directions
+      Connect current and next
+      Set current to next
+        </pre>
       </li>
     </ul>
   </div>

@@ -6,8 +6,8 @@ const xSizeElem = document.getElementById("xSize");
 const ySizeElem = document.getElementById("ySize");
 const zSizeElem = document.getElementById("zSize");
 const horizontalBiasElem = document.getElementById("horizontalBias");
-const growingTreeIndexElem = document.getElementById("growingTreeIndex");
-const indexBiasElem = document.getElementById("indexBias");
+const indexAnchorElem = document.getElementById("indexAnchor");
+const anchorBiasElem = document.getElementById("anchorBias");
 const sideLengthElem = document.getElementById("sideLength");
 const thicknessElem = document.getElementById("thickness");
 const canvasElem = document.getElementById("maze");
@@ -15,7 +15,7 @@ const context = canvasElem.getContext("2d");
 
 let algorithm, cellShape;
 let xSize, ySize, zSize;
-let horizontalBias, growingTreeIndex, indexBias;
+let horizontalBias, indexAnchor, anchorBias;
 let sideLength, thickness;
 
 function Cell(x, y, z, wallCount) {
@@ -317,33 +317,33 @@ function eller(grid) {
     const sets = [[]];
     let k = 0;
     const isLastRow = z == zSize - 1;
-    for (let x = 0; x < xSize; x++) {
-      const current = grid[x + ",0," + z];
+    let current = grid["0,0," + z];
+    while (current) {
       sets[k].push(current);
-      if ((isLastRow || Math.random() < horizontalBias) && x < xSize - 1) {
-        const next = grid[(x + 1) + ",0," + z];
+      const next = getNeighbor(current, current.getTranslations()[0], grid);
+      if ((isLastRow || Math.random() < horizontalBias) && current.x < xSize - 1) {
         if (currentRow.union(current, next)) {
           breakWall(current, next, 0);
         }
       } else {
         k++;
-        sets[k] = []
+        sets[k] = [];
       }
+      current = next;
     }
-    if (isLastRow) {
-      return;
-    }
-    for (let set of sets) {
-      const index = Math.floor(Math.random() * set.length);
-      for (let i = 0; i < set.length; i++) {
-        if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
-          const other = getNeighbor(set[i], [0, 0, 1], grid);
-          breakWall(set[i], other, 1);
-          currentRow.universe.set(other, set[i]);
+    if (!isLastRow) {
+      for (let set of sets) {
+        const index = Math.floor(Math.random() * set.length);
+        for (let i = 0; i < set.length; i++) {
+          if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
+            const other = getNeighbor(set[i], set[i].getTranslations()[1], grid);
+            breakWall(set[i], other, 1);
+            currentRow.universe.set(other, set[i]);
+          }
         }
       }
+      prevRow = currentRow;
     }
-    prevRow = currentRow;
   }
 }
 
@@ -352,7 +352,7 @@ function growingTree(grid) {
   const maze = [cells[Math.floor(Math.random() * cells.length)]];
   const visited = new Set(maze);
   while (maze.length > 0) {
-    const random = Math.floor((1 - indexBias) * Math.random() * maze.length + indexBias * growingTreeIndex * (maze.length - 1));
+    const random = Math.floor((1 - anchorBias) * Math.random() * maze.length + anchorBias * indexAnchor * (maze.length - 1));
     const cell = maze[random];
     const neighbors = getNeighbors(cell, grid, visited);
     if (neighbors.length == 0) {
@@ -518,9 +518,9 @@ function recursiveDivision(grid) {
 
   const divide = function (x1, z1, width, length) {
     if (width > 1 && length > 1) {
-      if (width < length || (width == length && Math.round(Math.random()))) {
+      if ((1 - horizontalBias) * width < horizontalBias * length || (width == length && Math.random() < horizontalBias)) {
         const path = x1 + Math.floor(Math.random() * width);
-        const z = z1 + Math.floor(Math.random() * (length - 1));
+        const z = z1 + Math.floor((1 - anchorBias) * Math.random() * (length - 1) + anchorBias * indexAnchor * (length - 2));
         for (let x = x1; x < x1 + width; x++) {
           if (x != path) {
             const cell = grid[x + ",0," + z];
@@ -531,7 +531,7 @@ function recursiveDivision(grid) {
         divide(x1, z + 1, width, length - (z - z1 + 1));
       } else {
         const path = z1 + Math.floor(Math.random() * length);
-        const x = x1 + Math.floor(Math.random() * (width - 1));
+        const x = x1 + Math.floor((1 - anchorBias) * Math.random() * (width - 1) + anchorBias * indexAnchor * (width - 2));
         for (let z = z1; z < z1 + length; z++) {
           if (z != path) {
             const cell = grid[x + ",0," + z];
@@ -548,21 +548,17 @@ function recursiveDivision(grid) {
 }
 
 function sidewinder(grid) {
-  for (let x = 0; x < xSize - 1; x++) {
-    grid[x + ",0,0"].walls[0] = true;
-    grid[(x + 1) + ",0,0"].walls[2] = true;
-  }
-  for (let z = 1; z < zSize; z++) {
+  for (let z = 0; z < zSize; z++) {
     let run = [];
     current = grid["0,0," + z];
     while (current) {
-      const next = getNeighbor(current, [1, 0, 0], grid);
+      const next = getNeighbor(current, current.getTranslations()[0], grid);
       run.push(current);
-      if (Math.random() < horizontalBias && current.x != xSize - 1) {
+      if ((z == 0 || Math.random() < horizontalBias) && current.x < xSize - 1) {
         breakWall(current, next, 0);
-      } else {
+      } else if (z > 0) {
         const cell = run[Math.floor(Math.random() * run.length)];
-        breakWall(cell, getNeighbor(cell, [0, 0, -1], grid), 3);
+        breakWall(cell, getNeighbor(cell, current.getTranslations()[3], grid), 3);
         run = [];
       }
       current = next;
@@ -602,8 +598,8 @@ function generate() {
   ySize = ySizeElem.disabled ? 1 : parseInt(ySizeElem.value);
   zSize = parseInt(zSizeElem.value);
   horizontalBias = parseFloat(horizontalBiasElem.value);
-  growingTreeIndex = parseFloat(growingTreeIndexElem.value);
-  indexBias = parseFloat(indexBiasElem.value);
+  indexAnchor = parseFloat(indexAnchorElem.value);
+  anchorBias = parseFloat(anchorBiasElem.value);
   sideLength = parseInt(sideLengthElem.value);
   thickness = parseInt(thicknessElem.value);
 
@@ -729,24 +725,30 @@ function algorithmChange() {
   cellShapeElem.disabled = false;
   cellShapeElem.options[1].disabled = false;
   horizontalBiasElem.disabled = true;
-  growingTreeIndexElem.disabled = true;
-  indexBiasElem.disabled = true;
+  indexAnchorElem.disabled = true;
+  anchorBiasElem.disabled = true;
   switch (algorithmElem.value) {
     case "eller":
     case "sidewinder":
       horizontalBiasElem.disabled = false;
-    case "recursiveDivision":
       cellShapeElem.disabled = true;
       cellShapeElem.value = "orthogonal";
       cellShapeChange();
       break;
     case "growingTree":
-      indexBiasElem.disabled = false;
-      growingTreeIndexElem.disabled = false;
+      indexAnchorElem.disabled = false;
+      anchorBiasElem.disabled = false;
       break;
     case "nAryTree":
       cellShapeElem.options[1].disabled = true;
       break;
+    case "recursiveDivision":
+      horizontalBiasElem.disabled = false;
+      cellShapeElem.disabled = true;
+      cellShapeElem.value = "orthogonal";
+      cellShapeChange();
+      indexAnchorElem.disabled = false;
+      anchorBiasElem.disabled = false;
   }
   if (cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") {
     cellShapeElem.value = "defaultShape";
