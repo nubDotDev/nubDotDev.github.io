@@ -694,6 +694,30 @@ function generate() {
   }
 
   eval(algorithm)(grid);
+
+  const entries = document.getElementById("entries").value;
+  let left;
+  let right;
+  if (entries == "corners") {
+    left = grid["0,0,0"];
+    right = grid[(xSize - 1) + "," + (ySize - 1) + "," + (zSize - 1)];
+  } else if (entries == "sides") {
+    left = grid["0,0," + Math.floor(zSize / 2)];
+    right = grid[(xSize - 1) + "," + (ySize - 1) + "," + Math.floor(zSize / 2)];
+  }
+  if (left) {
+    switch (left.constructor.name) {
+      case "CubeCell":
+        left.walls[2] = true;
+        right.walls[0] = true;
+        break;
+      default:
+        left.walls[Math.ceil(left.wallCount / 2)] = true;
+        right.walls[0] = true;
+        break;
+    }
+  }
+
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
 
@@ -703,8 +727,7 @@ function generate() {
   context.beginPath();
   context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   context.fill();
-  const colorElem = document.getElementById("color");
-  context.strokeStyle = colorElem.value;
+  context.strokeStyle = document.getElementById("color").value;
 
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
