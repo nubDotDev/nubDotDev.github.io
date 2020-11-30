@@ -703,7 +703,8 @@ function generate() {
   context.beginPath();
   context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   context.fill();
-  context.strokeStyle = document.getElementById("color").value;
+  const colorElem = document.getElementById("color");
+  context.strokeStyle = colorElem.value;
 
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
