@@ -693,9 +693,7 @@ function generate() {
     }
   }
 
-  if (algorithm != "defaultAlgorithm") {
-    eval(algorithm)(grid);
-  }
+  eval(algorithm)(grid);
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
 
@@ -705,7 +703,7 @@ function generate() {
   context.beginPath();
   context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   context.fill();
-  context.fillStyle = "#000000"
+  context.strokeStyle = document.getElementById("color").value;
 
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
@@ -719,6 +717,8 @@ function generate() {
   context.stroke();
 
   console.log("Draw time: " + (new Date().getTime() - start));
+
+  document.getElementById("download").style.display = "inline";
 }
 
 function algorithmChange() {
@@ -751,7 +751,7 @@ function algorithmChange() {
       anchorBiasElem.disabled = false;
   }
   if (cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") {
-    cellShapeElem.value = "defaultShape";
+    cellShapeElem.value = "orthogonal";
     cellShapeChange();
   }
 }

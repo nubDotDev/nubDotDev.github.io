@@ -4,55 +4,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
   <title>Maze Generator</title>
 </head>
 
 <body>
   <h1>Maze Generator</h1>
-  <p>If a field isn't grayed out, fill it in.
-    Click <a href="info.html">here</a> to learn more about maze generation.</p>
-  <select name="algorithm" id="algorithm" onchange="algorithmChange()">
-    <option value="defaultAlgorithm">--Algorithm--</option>
-    <option value="aldousBroder">Aldous Broder</option>
-    <option value="eller">Eller</option>
-    <option value="growingTree">Growing Tree</option>
-    <option value="huntAndKill">Hunt and Kill</option>
-    <option value="kruskal">Kruskal</option>
-    <option value="nAryTree">N-Ary Tree</option>
-    <option value="prim">Prim</option>
-    <option value="recursiveBacktracking">Recursive Backtracking</option>
-    <option value="recursiveDivision">Recursive Division</option>
-    <option value="sidewinder">Sidewinder</option>
-    <option value="wilson">Wilson</option>
-  </select>
-  <select name="cellShape" id="cellShape" onchange="cellShapeChange()">
-    <option value="defaultShape">--Cell Shape--</option>
-    <option value="delta">Delta (Triangles)</option>
-    <option value="orthogonal">Orthogonal (Squares)</option>
-    <option value="sigma">Sigma (Hexagons)</option>
-    <option value="upsilon">Upsilon (Octogons + Squares)</option>
-    <option value="3d">3D (Cubes)</option>
-  </select>
+  <p>Click <a href="info.html">here</a> to learn more about maze generation.</p>
+  <b>General:</b>
+  <table>
+    <tr>
+      <td>Cell shape:</td>
+      <td>
+        <select id="cellShape" name="cellShape" onchange="cellShapeChange()">
+          <option value="delta">Delta (Triangles)</option>
+          <option value="orthogonal" selected>Orthogonal (Squares)</option>
+          <option value="sigma">Sigma (Hexagons)</option>
+          <option value="upsilon">Upsilon (Octogons + Squares)</option>
+          <option value="3d">3D (Cubes)</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Algorithm:</td>
+      <td>
+        <select id="algorithm" name="algorithm" onchange="algorithmChange()">
+          <option value="aldousBroder">Aldous Broder</option>
+          <option value="eller">Eller</option>
+          <option value="growingTree">Growing Tree</option>
+          <option value="huntAndKill">Hunt and Kill</option>
+          <option value="kruskal">Kruskal</option>
+          <option value="nAryTree">N-Ary Tree</option>
+          <option value="prim">Prim</option>
+          <option value="recursiveBacktracking" selected>Recursive Backtracking</option>
+          <option value="recursiveDivision">Recursive Division</option>
+          <option value="sidewinder">Sidewinder</option>
+          <option value="wilson">Wilson</option>
+        </select>
+      </td>
+    </tr>
+  </table>
+  <hr>
+  <b>Dimensions:</b>
+  <table>
+    <tr>
+      <td>Width:</td>
+      <td><input id="xSize" class="numericalSetting" name="xSize" type="number" min="1" value="20"> cells</td>
+    </tr>
+    <tr>
+      <td>Length:</td>
+      <td><input id="zSize" class="numericalSetting" name="zSize" type="number" min="1" value="20"> cells</td>
+    </tr>
+    <tr>
+      <td>Height:</td>
+      <td><input id="ySize" class="numericalSetting" name="ySize" type="number" min="1" value="1" disabled> cells</td>
+    </tr>
+  </table>
+  <hr>
+  <b>Biases (0-1 inclusively):</b>
+  <table>
+    <tr>
+      <td>Horizontal bias:</td>
+      <td><input id="horizontalBias" class="numericalSetting" name="horizontalBias" type="number" min="0" max="1"
+          step="any" value="0.5" disabled></td>
+    </tr>
+    <tr>
+      <td>Index anchor:</td>
+      <td><input id="indexAnchor" class="numericalSetting" name="indexAnchor" type="number" min="0" max="1" step="any"
+          value="0.5" disabled></td>
+    </tr>
+    <tr>
+      <td>Anchor bias:</td>
+      <td><input id="anchorBias" class="numericalSetting" name="anchorBias" type="number" min="0" max="1" step="any"
+          value="0" disabled></td>
+    </tr>
+  </table>
+  <hr>
+  <b>Draw settings:</b>
+  <table>
+    <tr>
+      <td>Side length:</td>
+      <td><input id="sideLength" class="numericalSetting" name="sideLength" type="number" min="1" value="20"> pixels
+      </td>
+    </tr>
+    <tr>
+      <td>Line thickness:</td>
+      <td><input id="thickness" class="numericalSetting" name="thickness" type="number" min="1" value="2"> pixels</td>
+    </tr>
+    <tr>
+      <td>Line color:</td>
+      <td><input id="color" name="color" type="color"></td>
+    </tr>
+  </table>
+  <button id="generate" name="generate" type="submit" onclick="generate()">Generate</button>
   <br>
-  <input type="number" min="1" name="xSize" placeholder="Width (cells)" id="xSize">
-  <input type="number" min="1" name="ySize" placeholder="Height (cells)" id="ySize" disabled>
-  <input type="number" min="1" name="zSize" placeholder="Length (cells)" id="zSize">
-  <br>
-  <input type="number" min="0" max="1" step="any" name="horizontalBias" placeholder="Horizontal bias"
-    id="horizontalBias" disabled>
-  <input type="number" min="0" max="1" step="any" name="indexAnchor" placeholder="Index anchor" id="indexAnchor"
-    disabled>
-  <input type="number" min="0" max="1" step="any" name="anchorBias" placeholder="Anchor bias" id="anchorBias" disabled>
-  Fields in this row can be decimals between 0 and 1 inclusively.
-  <br>
-  <input type="number" min="1" name="sideLength" placeholder="Side length (pixels)" id="sideLength">
-  <input type="number" min="1" name="thickness" placeholder="Line thickness (pixels)" id="thickness">
-  <br>
-  <input type="button" name="generate" value="Generate" onclick="generate()" id="generate">
+  <a id="download" href="#" class="button" download="maze.png" onclick="downloadMaze()"
+    style="display: none;">Download</a>
   <br><br>
   <canvas id="maze"></canvas>
-  <a href="#" class="button" download="maze.png" onclick="downloadMaze()" style="display: block;"
-    id="download">Download</a>
   <script src="maze.js"></script>
 </body>
 
