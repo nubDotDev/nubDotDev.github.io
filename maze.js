@@ -594,14 +594,14 @@ function wilson(grid) {
 function generate() {
   algorithm = algorithmElem.value;
   cellShape = cellShapeElem.value;
-  xSize = parseInt(xSizeElem.value);
-  ySize = ySizeElem.disabled ? 1 : parseInt(ySizeElem.value);
-  zSize = parseInt(zSizeElem.value);
-  horizontalBias = parseFloat(horizontalBiasElem.value);
-  indexAnchor = parseFloat(indexAnchorElem.value);
-  anchorBias = parseFloat(anchorBiasElem.value);
-  sideLength = parseInt(sideLengthElem.value);
-  thickness = parseInt(thicknessElem.value);
+  xSize = Math.max(1, parseInt(xSizeElem.value));
+  ySize = ySizeElem.disabled ? 1 : Math.max(1, parseInt(ySizeElem.value));
+  zSize = Math.max(1, parseInt(zSizeElem.value));
+  horizontalBias = Math.min(1, parseFloat(horizontalBiasElem.value));
+  indexAnchor = Math.min(1, parseFloat(indexAnchorElem.value));
+  anchorBias = Math.min(1, parseFloat(anchorBiasElem.value));
+  sideLength = Math.max(1, parseInt(sideLengthElem.value));
+  thickness = Math.max(1, parseInt(thicknessElem.value));
 
   switch (cellShape) {
     case "delta":

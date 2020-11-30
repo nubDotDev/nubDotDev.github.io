@@ -7,18 +7,29 @@ body {
 }
 
 hr {
-    width: 300px;
     margin-left: 0px;
+    width: 300px;
 }
 
-button {
+.button {
     background-color: lightgray;
     border: 2px solid gray;
-    cursor: pointer;
     border-radius: 4px;
-    width: 300px;
-    padding: 4px;
+    color: black;
+    cursor: pointer;
+    display: block;
+    outline: none;
+    text-decoration: none;
+    transition: 0.1s;
+}
+
+.button:hover {
+    background-color: #aaaaaa;
+}
+
+.bottomButton {
     font-size: 16px;
-    text-emphasis: initial blue;
-    margin-top: 8px;
+    margin: 8px 0px;
+    padding: 4px 112px;
+    width: 300px;
 }

@@ -11,7 +11,7 @@
 
 <body>
   <h1>Maze Generator</h1>
-  <p>Click <a href="info.html">here</a> to learn more about maze generation.</p>
+  <p><a href="info.html">Info</a> | <a href="https://github.com/nubDotDev/nubDotDev.github.io">GitHub Repo</a></p>
   <b>General:</b>
   <table>
     <tr>
@@ -104,12 +104,11 @@
     </tr>
     <tr>
       <td>Line color:</td>
-      <td><input id="color" name="color" type="color"></td>
+      <td><input id="color" class="button" name="color" type="color"></td>
     </tr>
   </table>
-  <button id="generate" name="generate" type="submit" onclick="generate()">Generate</button>
-  <br>
-  <a id="download" href="#" class="button" download="maze.png" onclick="downloadMaze()"
+  <button id="generate" class="button bottomButton" name="generate" type="submit" onclick="generate()">Generate</button>
+  <a id="download" class="button bottomButton" href="#" download="maze.png" onclick="downloadMaze()"
     style="display: none;">Download</a>
   <br><br>
   <canvas id="maze"></canvas>
