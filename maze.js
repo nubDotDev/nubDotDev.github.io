@@ -297,8 +297,8 @@ function eller(grid) {
         const index = Math.floor(Math.random() * set.length);
         for (let i = 0; i < set.length; i++) {
           if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
-            const other = getNeighbor(set[i], set[i].getTranslation(1), grid);
-            breakWall(set[i], other, 1);
+            const other = getNeighbor(set[i], set[i].getTranslation(2), grid);
+            breakWall(set[i], other, 2);
             currentRow.universe.set(other, set[i]);
           }
         }
@@ -518,7 +518,7 @@ function sidewinder(grid) {
         breakWall(current, next, 0);
       } else if (z > 0) {
         const cell = run[Math.floor(Math.random() * run.length)];
-        breakWall(cell, getNeighbor(cell, current.getTranslation(3), grid), 3);
+        breakWall(cell, getNeighbor(cell, current.getTranslation(5), grid), 5);
         run = [];
       }
       current = next;
