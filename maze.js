@@ -9,7 +9,7 @@ const horizontalBiasElem = document.getElementById("horizontalBias");
 const indexAnchorElem = document.getElementById("indexAnchor");
 const anchorBiasElem = document.getElementById("anchorBias");
 const sideLengthElem = document.getElementById("sideLength");
-const thicknessElem = document.getElementById("thickness");
+const thicknessElem = document.getElementById("lineThickness");
 const canvasElem = document.getElementById("maze");
 const context = canvasElem.getContext("2d");
 
@@ -31,205 +31,94 @@ function Cell(x, y, z, wallCount) {
 
   this.getTranslations = function () {
     return [];
-  }
+  };
+
+  this.getTranslation = function (direction) {
+    return this.getTranslations()[direction];
+  };
 
   this.getOpposite = function (direction) {
-    return (parseInt(direction) + (this.wallCount / 2)) % this.wallCount;
-  }
+    return (direction + (this.wallCount / 2)) % this.wallCount;
+  };
+
+  this.getWallDirections = function () {
+    return [];
+  };
 
   this.getWallByDirection = function (direction) {
-    return direction;
-  }
+    return this.getWallDirections()[direction];
+  };
 
   this.draw = function (drawData) {
     let [centerX, centerY, angle] = drawData;
-    const radius = sideLength / Math.sin(Math.PI / this.wallCount) / 2;
+    const wall2dCount = wallCount - 2;
+    const radius = sideLength / Math.sin(Math.PI / wall2dCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    for (let i = 0; i < this.wallCount; i++) {
-      angle -= Math.PI * 2 / this.wallCount;
+    for (let i = 0; i < wall2dCount; i++) {
+      angle -= Math.PI * 2 / wall2dCount;
       const toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
       toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     }
-  }
-}
-
-function QuadCell(x, z) {
-  Cell.call(this, x, 0, z, 4);
-
-  this.getTranslations = function () {
-    return QuadCell.translations;
-  }
-}
-
-QuadCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1]
-];
-
-function BottomHexCell(x, z) {
-  Cell.call(this, x, 0, z, 6);
-
-  this.getTranslations = function () {
-    return BottomHexCell.translations;
-  }
-}
-
-BottomHexCell.translations = [
-  [1, 0, 1],
-  [0, 0, 1],
-  [-1, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1],
-  [1, 0, 0]
-];
-
-function TopHexCell(x, z) {
-  Cell.call(this, x, 0, z, 6);
-
-  this.getTranslations = function () {
-    return TopHexCell.translations;
-  }
-}
-
-TopHexCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0],
-  [-1, 0, -1],
-  [0, 0, -1],
-  [1, 0, -1]
-];
-
-function getTriOpposite(direction) {
-  return -1 * (parseInt(direction) - 1) + 1;
-}
-
-function UpwardTriCell(x, z) {
-  Cell.call(this, x, 0, z, 3);
-
-  this.getTranslations = function () {
-    return UpwardTriCell.translations;
-  }
-
-  this.getOpposite = getTriOpposite;
-}
-
-UpwardTriCell.translations = [
-  [1, 0, 0],
-  [0, 0, 1],
-  [-1, 0, 0]
-];
-
-function DownwardTriCell(x, z) {
-  Cell.call(this, x, 0, z, 3);
-
-  this.getTranslations = function () {
-    return DownwardTriCell.translations
-  }
-
-  this.getOpposite = getTriOpposite;
-
-  this.getWallByDirection = function (direction) {
-    switch (parseInt(direction)) {
-      case 0:
-        return 0;
-      case 1:
-        return 2;
-      case 2:
-        return 1;
+    if (this.walls[wall2dCount]) {
+      context.moveTo(centerX - radius / 3, centerY + radius / 3);
+      context.lineTo(centerX + radius / 3, centerY - radius / 3)
     }
-  }
+    if (this.walls[wall2dCount + 1]) {
+      context.moveTo(centerX - radius / 3, centerY - radius / 3);
+      context.lineTo(centerX + radius / 3, centerY + radius / 3)
+    }
+  };
 }
 
-DownwardTriCell.translations = [
-  [1, 0, 0],
-  [0, 0, -1],
-  [-1, 0, 0]
-];
-
-function OctCell(x, z) {
-  Cell.call(this, x, 0, z, 8);
+function TriCell(x, y, z, upward) {
+  Cell.call(this, x, y, z, 5);
+  this.upward = upward;
 
   this.getTranslations = function () {
-    return OctCell.translations
-  }
+    return upward ? TriCell.upwardTranslations : TriCell.downwardTranslations;
+  };
 
   this.getOpposite = function (direction) {
-    const d = parseInt(direction);
-    if (d <= 3) {
-      return (d + 2) % 4;
-    }
-    return (d - 2) % 4 + 4;
-  }
+    return -1 * (direction - 2) + 2;
+  };
 
-  this.getWallByDirection = function (direction) {
-    if (direction <= 3) {
-      return direction * 2;
-    }
-    return (direction - 4) * 2 + 1;
-  }
+  this.getWallDirections = function () {
+    return upward ? TriCell.upwardWallDirections : TriCell.downwardWallDirections;
+  };
 }
 
-OctCell.translations = [
+TriCell.upwardTranslations = [
   [1, 0, 0],
+  [0, 1, 0],
   [0, 0, 1],
-  [-1, 0, 0],
-  [0, 0, -1],
-  [1, 0, 1],
-  [-1, 0, 1],
-  [-1, 0, -1],
-  [1, 0, -1]
+  [0, -1, 0],
+  [-1, 0, 0]
 ];
 
-function CubeCell(x, y, z) {
+TriCell.downwardTranslations = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, -1],
+  [0, -1, 0],
+  [-1, 0, 0]
+];
+
+TriCell.upwardWallDirections = [0, 3, 1, 4, 2];
+TriCell.downwardWallDirections = [0, 3, 2, 4, 1];
+
+function QuadCell(x, y, z) {
   Cell.call(this, x, y, z, 6);
 
   this.getTranslations = function () {
-    return CubeCell.translations
-  }
+    return QuadCell.translations;
+  };
 
-  this.getWallByDirection = function (direction) {
-    switch (parseInt(direction)) {
-      case 0:
-        return 0;
-      case 1:
-        return 4;
-      case 2:
-        return 1;
-      case 3:
-        return 2;
-      case 4:
-        return 5;
-      case 5:
-        return 3;
-    }
-  }
-
-  this.draw = function (drawData) {
-    let [centerX, centerY, angle] = drawData;
-    const radius = sideLength / Math.sin(Math.PI / 4) / 2;
-    context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    for (let i = 0; i < 4; i++) {
-      angle -= Math.PI / 2;
-      const toFunction = this.walls[i] ? context.moveTo.bind(context) : context.lineTo.bind(context);
-      toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    }
-    if (this.walls[4]) {
-      context.moveTo(centerX + sideLength * 3 / 8, centerY - sideLength / 8);
-      context.lineTo(centerX, centerY - sideLength * 3 / 8);
-      context.lineTo(centerX - sideLength * 3 / 8, centerY - sideLength / 8);
-    }
-    if (this.walls[5]) {
-      context.moveTo(centerX + sideLength * 3 / 8, centerY + sideLength / 8);
-      context.lineTo(centerX, centerY + sideLength * 3 / 8);
-      context.lineTo(centerX - sideLength * 3 / 8, centerY + sideLength / 8);
-    }
-  }
+  this.getWallDirections = function () {
+    return QuadCell.wallDirections;
+  };
 }
 
-CubeCell.translations = [
+QuadCell.translations = [
   [1, 0, 0],
   [0, 1, 0],
   [0, 0, 1],
@@ -237,6 +126,78 @@ CubeCell.translations = [
   [0, -1, 0],
   [0, 0, -1]
 ];
+
+QuadCell.wallDirections = [0, 4, 1, 2, 5, 3];
+
+function HexCell(x, y, z, top) {
+  Cell.call(this, x, y, z, 8);
+  this.top = top;
+
+  this.getTranslations = function () {
+    return this.top ? HexCell.topTranslations : HexCell.bottomTranslations;
+  };
+
+  this.getWallDirections = function () {
+    return HexCell.wallDirections;
+  };
+}
+
+HexCell.topTranslations = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [-1, 0, -1],
+  [0, -1, 0],
+  [0, 0, -1],
+  [1, 0, -1]
+];
+
+HexCell.bottomTranslations = [
+  [1, 0, 1],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, 0],
+  [0, -1, 0],
+  [0, 0, -1],
+  [1, 0, 0]
+];
+
+HexCell.wallDirections = [0, 6, 1, 2, 3, 7, 4, 5];
+
+function OctCell(x, y, z) {
+  Cell.call(this, x, y, z, 10);
+
+  this.getTranslations = function () {
+    return OctCell.translations;
+  };
+
+  this.getOpposite = function (direction) {
+    return OctCell.opposites[direction];
+  };
+
+  this.getWallDirections = function () {
+    return OctCell.wallDirections;
+  };
+}
+
+OctCell.translations = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, -1, 0],
+  [0, 0, -1],
+  [1, 0, 1],
+  [-1, 0, 1],
+  [-1, 0, -1],
+  [1, 0, -1]
+];
+
+OctCell.opposites = [3, 4, 5, 0, 1, 2, 8, 9, 6, 7];
+
+OctCell.wallDirections = [0, 8, 2, 4, 9, 6, 1, 3, 5, 7];
 
 function DisjointSet() {
   this.universe = new WeakMap();
@@ -272,7 +233,7 @@ function getNeighbor(cell, translation, grid) {
 function getNeighbors(cell, grid, visited, inverse) {
   const neighbors = [];
   for (let i = 0; i < cell.wallCount; i++) {
-    const neighbor = getNeighbor(cell, cell.getTranslations()[i], grid);
+    const neighbor = getNeighbor(cell, cell.getTranslation(i), grid);
     if (neighbor && (!inverse == (!visited || !visited.has(neighbor)))) {
       neighbors.push([neighbor, i]);
     }
@@ -320,7 +281,7 @@ function eller(grid) {
     let current = grid["0,0," + z];
     while (current) {
       sets[k].push(current);
-      const next = getNeighbor(current, current.getTranslations()[0], grid);
+      const next = getNeighbor(current, current.getTranslation(0), grid);
       if ((isLastRow || Math.random() < horizontalBias) && current.x < xSize - 1) {
         if (currentRow.union(current, next)) {
           breakWall(current, next, 0);
@@ -336,7 +297,7 @@ function eller(grid) {
         const index = Math.floor(Math.random() * set.length);
         for (let i = 0; i < set.length; i++) {
           if (i == index || Math.random() < (1 - horizontalBias) * (xSize - sets.length) / xSize) {
-            const other = getNeighbor(set[i], set[i].getTranslations()[1], grid);
+            const other = getNeighbor(set[i], set[i].getTranslation(1), grid);
             breakWall(set[i], other, 1);
             currentRow.universe.set(other, set[i]);
           }
@@ -406,7 +367,7 @@ function kruskal(grid) {
   while (walls.length > 0) {
     const random = Math.floor(Math.random() * walls.length);
     const [cell, direction] = walls[random];
-    const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+    const other = getNeighbor(cell, cell.getTranslation(direction), grid);
     if (other && disjointSet.union(cell, other)) {
       breakWall(cell, other, direction);
     }
@@ -416,11 +377,22 @@ function kruskal(grid) {
 
 function nAryTree(grid) {
   for (let cell of Object.values(grid)) {
-    const directions = nAryTree.getSouthEasterns(cell);
+    let directions;
+    switch (cell.constructor.name) {
+      case "QuadCell":
+        directions = [0, 1, 2];
+        break;
+      case "HexCell":
+        directions = cell.top ? [0, 1, 2] : [0, 1, 2, 7];
+        break;
+      case "OctCell":
+        directions = [0, 1, 2, 6];
+        break;
+    }
     while (directions.length > 0) {
       const random = Math.floor(Math.random() * directions.length);
       const direction = directions[random];
-      const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+      const other = getNeighbor(cell, cell.getTranslation(direction), grid);
       if (other) {
         breakWall(cell, other, direction);
         break;
@@ -431,18 +403,6 @@ function nAryTree(grid) {
 }
 
 nAryTree.getSouthEasterns = function (cell) {
-  switch (cell.constructor.name) {
-    case "QuadCell":
-      return [0, 1];
-    case "BottomHexCell":
-      return [0, 1, 5];
-    case "TopHexCell":
-      return [0, 1];
-    case "OctCell":
-      return [0, 1, 4];
-    case "CubeCell":
-      return [0, 1, 2];
-  }
 }
 
 function prim(grid) {
@@ -473,7 +433,7 @@ function prim(grid) {
     for (let i = frontier.length - 1; i >= 0; i--) {
       if (frontier[i]) {
         const [cell, direction] = frontier[i];
-        const other = getNeighbor(cell, cell.getTranslations()[direction], grid);
+        const other = getNeighbor(cell, cell.getTranslation(direction), grid);
         if (other && !visited.has(other)) {
           breakWall(cell, other, direction);
           const otherWeights = weights.get(other);
@@ -524,7 +484,7 @@ function recursiveDivision(grid) {
         for (let x = x1; x < x1 + width; x++) {
           if (x != path) {
             const cell = grid[x + ",0," + z];
-            breakWall(cell, getNeighbor(cell, cell.getTranslations()[1], grid), 1, true);
+            breakWall(cell, getNeighbor(cell, cell.getTranslation(1), grid), 1, true);
           }
         }
         divide(x1, z1, width, z - z1 + 1);
@@ -535,7 +495,7 @@ function recursiveDivision(grid) {
         for (let z = z1; z < z1 + length; z++) {
           if (z != path) {
             const cell = grid[x + ",0," + z];
-            breakWall(cell, getNeighbor(cell, cell.getTranslations()[0], grid), 0, true);
+            breakWall(cell, getNeighbor(cell, cell.getTranslation(0), grid), 0, true);
           }
         }
         divide(x1, z1, x - x1 + 1, length);
@@ -552,13 +512,13 @@ function sidewinder(grid) {
     let run = [];
     current = grid["0,0," + z];
     while (current) {
-      const next = getNeighbor(current, current.getTranslations()[0], grid);
+      const next = getNeighbor(current, current.getTranslation(0), grid);
       run.push(current);
       if ((z == 0 || Math.random() < horizontalBias) && current.x < xSize - 1) {
         breakWall(current, next, 0);
       } else if (z > 0) {
         const cell = run[Math.floor(Math.random() * run.length)];
-        breakWall(cell, getNeighbor(cell, current.getTranslations()[3], grid), 3);
+        breakWall(cell, getNeighbor(cell, current.getTranslation(3), grid), 3);
         run = [];
       }
       current = next;
@@ -584,7 +544,7 @@ function wilson(grid) {
     while (notMaze.has(current)) {
       notMaze.delete(current);
       const direction = run.get(current);
-      const next = getNeighbor(current, current.getTranslations()[direction], grid);
+      const next = getNeighbor(current, current.getTranslation(direction), grid);
       breakWall(current, next, direction);
       current = next;
     }
@@ -603,84 +563,84 @@ function generate() {
   sideLength = Math.max(1, parseInt(sideLengthElem.value));
   thickness = Math.max(1, parseInt(thicknessElem.value));
 
+  let gridHeight;
   switch (cellShape) {
     case "delta":
       this.createCell = function (x, y, z) {
-        if (x % 2 == 1 ^ z % 2 == 1) {
-          return new DownwardTriCell(x, z);
-        }
-        return new UpwardTriCell(x, z);
-      }
+        return new TriCell(x, y, z, !(x % 2 == 1 ^ z % 2 == 1));
+      };
+      gridHeight = zSize * sideLength * SQRT3 / 2;
       this.drawData = function (cell) {
         return [
-          (cell.x + 1) * (sideLength * 0.5) + thickness,
-          cell instanceof DownwardTriCell ?
-            cell.z * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness :
-            (cell.z + 1) * sideLength * SQRT3 / 2 - sideLength / SQRT3 / 2 + thickness,
-          cell instanceof DownwardTriCell ? Math.PI / 6 : Math.PI / 2
+          (cell.x + 1) * (sideLength / 2) + thickness,
+          cell.upward ?
+            cell.y * (gridHeight + sideLength) + (cell.z + 1) * sideLength * SQRT3 / 2 - sideLength / SQRT3 / 2 + thickness :
+            cell.y * (gridHeight + sideLength) + cell.z * sideLength * SQRT3 / 2 + sideLength / SQRT3 / 2 + thickness,
+          cell.upward ? Math.PI / 2 : Math.PI / 6
         ];
-      }
-      canvasElem.width = (Math.ceil(xSize / 2) + 1) * sideLength + (thickness * 2);
-      canvasElem.height = zSize * sideLength * (SQRT3 / 2) + (thickness * 2);
+      };
+      canvasElem.width = (xSize / 2 + 0.5) * sideLength + thickness * 2;
       break;
     case "orthogonal":
       this.createCell = function (x, y, z) {
-        return new QuadCell(x, z);
-      }
+        return new QuadCell(x, y, z);
+      };
+      gridHeight = zSize * sideLength;
       this.drawData = function (cell) {
-        return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + thickness, Math.PI / 4];
-      }
-      canvasElem.width = xSize * sideLength + (thickness * 2);
-      canvasElem.height = zSize * sideLength + (thickness * 2);
+        return [
+          (cell.x + 0.5) * sideLength + thickness,
+          cell.y * (gridHeight + sideLength) + (cell.z + 0.5) * sideLength + thickness,
+          Math.PI / 4
+        ];
+      };
+      canvasElem.width = xSize * sideLength + thickness * 2;
       break;
     case "sigma":
       this.createCell = function (x, y, z) {
-        if (x % 2 == 0) {
-          return new BottomHexCell(x, z);
-        }
-        return new TopHexCell(x, z);
-      }
+        return new HexCell(x, y, z, x % 2 > 0);
+      };
+      gridHeight = (zSize + 0.5) * sideLength * SQRT3;
       this.drawData = function (cell) {
         return [
           (cell.x + (2 / 3)) * (1.5 * sideLength) + thickness,
-          cell instanceof BottomHexCell ?
-            (cell.z + 1) * sideLength * SQRT3 + thickness :
-            (cell.z + 0.5) * sideLength * SQRT3 + thickness,
+          cell.y * (gridHeight + sideLength) + (cell.z + (cell.top ? 0.5 : 1)) * sideLength * SQRT3 + thickness,
           0
         ];
-      }
+      };
       canvasElem.width = (xSize + 1 / 3) * sideLength * 1.5 + (thickness * 2);
-      canvasElem.height = (zSize + 0.5) * sideLength * SQRT3 + (thickness * 2);
       break;
     case "upsilon":
       this.createCell = function (x, y, z) {
         if (x % 2 == 1 ^ z % 2 == 1) {
-          return new QuadCell(x, z);
+          return new QuadCell(x, y, z);
         }
-        return new OctCell(x, z);
-      }
+        return new OctCell(x, y, z);
+      };
+      gridHeight = zSize * (sideLength + sideLength / Math.SQRT2) + sideLength / Math.SQRT2;
       this.drawData = function (cell) {
-        const offset = 0.5 * sideLength / Math.SQRT2;
         return [
-          (cell.x + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
-          (cell.z + 0.5) * (sideLength + sideLength / Math.SQRT2) + offset + thickness,
+          (cell.x + 0.5) * (sideLength + sideLength / Math.SQRT2) + sideLength / Math.SQRT2 / 2 + thickness,
+          cell.y * (gridHeight + sideLength) + (cell.z + 0.5) * (sideLength + sideLength / Math.SQRT2) + sideLength / Math.SQRT2 / 2 + thickness,
           cell instanceof QuadCell ? Math.PI / 4 : Math.PI / 8
         ];
-      }
-      canvasElem.width = xSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
-      canvasElem.height = zSize * (sideLength + sideLength / Math.SQRT2) + (sideLength / Math.SQRT2) + (thickness * 2);
+      };
+      canvasElem.width = xSize * (sideLength + sideLength / Math.SQRT2) + sideLength / Math.SQRT2 + thickness * 2;
       break;
-    case "3d":
+    case "zeta":
       this.createCell = function (x, y, z) {
-        return new CubeCell(x, y, z);
-      }
+        return new OctCell(x, y, z);
+      };
+      gridHeight = zSize * (sideLength + 2 * sideLength / Math.SQRT2);
       this.drawData = function (cell) {
-        return [(cell.x + 0.5) * sideLength + thickness, (cell.z + 0.5) * sideLength + cell.y * (zSize + 1) * sideLength + thickness, Math.PI / 4];
-      }
-      canvasElem.width = xSize * sideLength + (thickness * 2);
-      canvasElem.height = ySize * (zSize * sideLength) + (ySize - 1) * sideLength + (thickness * 2);
-      break;
+        return [
+          (cell.x + 0.5) * (sideLength + 2 * sideLength / Math.SQRT2) + thickness,
+          cell.y * (gridHeight + sideLength) + (cell.z + 0.5) * (sideLength + 2 * sideLength / Math.SQRT2) + thickness,
+          Math.PI / 8
+        ];
+      };
+      canvasElem.width = xSize * (sideLength + 2 * sideLength / Math.SQRT2) + thickness * 2;
   }
+  canvasElem.height = ySize * gridHeight + (ySize - 1) * sideLength + thickness * 2;
 
   let start = new Date().getTime();
 
@@ -696,8 +656,7 @@ function generate() {
   eval(algorithm)(grid);
 
   const entries = document.getElementById("entries").value;
-  let left;
-  let right;
+  let left, right;
   if (entries == "corners") {
     left = grid["0,0,0"];
     right = grid[(xSize - 1) + "," + (ySize - 1) + "," + (zSize - 1)];
@@ -707,15 +666,17 @@ function generate() {
   }
   if (left) {
     switch (left.constructor.name) {
-      case "CubeCell":
-        left.walls[2] = true;
-        right.walls[0] = true;
+      case "HexCell":
+        left.walls[3] = true;
+        break;
+      case "OctCell":
+        left.walls[4] = true;
         break;
       default:
-        left.walls[Math.ceil(left.wallCount / 2)] = true;
-        right.walls[0] = true;
+        left.walls[2] = true;
         break;
     }
+    right.walls[0] = true;
   }
 
   console.log("Generation time: " + (new Date().getTime() - start));
@@ -727,7 +688,7 @@ function generate() {
   context.beginPath();
   context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   context.fill();
-  context.strokeStyle = document.getElementById("color").value;
+  context.strokeStyle = document.getElementById("wallColor").value;
 
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
@@ -742,49 +703,47 @@ function generate() {
 
   console.log("Draw time: " + (new Date().getTime() - start));
 
-  document.getElementById("download").style.display = "inline";
+  document.getElementById("download").style.display = "block";
 }
 
 function algorithmChange() {
+  anchorBiasElem.disabled = true;
   cellShapeElem.disabled = false;
-  cellShapeElem.options[1].disabled = false;
+  cellShapeElem.options[0].disabled = false;
   horizontalBiasElem.disabled = true;
   indexAnchorElem.disabled = true;
-  anchorBiasElem.disabled = true;
+  ySizeElem.disabled = false;
   switch (algorithmElem.value) {
     case "eller":
     case "sidewinder":
-      horizontalBiasElem.disabled = false;
       cellShapeElem.disabled = true;
-      cellShapeElem.value = "orthogonal";
-      cellShapeChange();
+      horizontalBiasElem.disabled = false;
+      ySizeElem.disabled = true;
       break;
     case "growingTree":
-      indexAnchorElem.disabled = false;
       anchorBiasElem.disabled = false;
+      indexAnchorElem.disabled = false;
       break;
     case "nAryTree":
-      cellShapeElem.options[1].disabled = true;
+      cellShapeElem.options[0].disabled = true;
       break;
     case "recursiveDivision":
-      horizontalBiasElem.disabled = false;
-      cellShapeElem.disabled = true;
-      cellShapeElem.value = "orthogonal";
-      cellShapeChange();
-      indexAnchorElem.disabled = false;
       anchorBiasElem.disabled = false;
+      cellShapeElem.disabled = true;
+      horizontalBiasElem.disabled = false;
+      indexAnchorElem.disabled = false;
+      ySizeElem.disabled = true;
   }
-  if (cellShapeElem.options[1].disabled && cellShapeElem.value == "delta") {
+  if (cellShapeElem.disabled || (cellShapeElem.options[0].disabled && cellShapeElem.value == "delta")) {
     cellShapeElem.value = "orthogonal";
     cellShapeChange();
+  }
+  if (ySizeElem.disabled) {
+    ySizeElem.value = 1;
   }
 }
 
 function cellShapeChange() {
-  ySizeElem.disabled = true;
-  if (cellShapeElem.value == "3d") {
-    ySizeElem.disabled = false;
-  }
 }
 
 function downloadMaze() {

@@ -22,7 +22,7 @@
           <option value="orthogonal" selected>Orthogonal (Squares)</option>
           <option value="sigma">Sigma (Hexagons)</option>
           <option value="upsilon">Upsilon (Octogons + Squares)</option>
-          <option value="3d">3D (Cubes)</option>
+          <option value="zeta">Zeta (Squares w/ Diagonals)</option>
         </select>
       </td>
     </tr>
@@ -67,8 +67,8 @@
       <td><input id="zSize" class="numericalSetting" name="zSize" type="number" min="1" value="20"> cells</td>
     </tr>
     <tr>
-      <td>Height:</td>
-      <td><input id="ySize" class="numericalSetting" name="ySize" type="number" min="1" value="1" disabled> cells</td>
+      <td>Height (3D):</td>
+      <td><input id="ySize" class="numericalSetting" name="ySize" type="number" min="1" value="1"> cells</td>
     </tr>
   </table>
   <hr>
@@ -100,17 +100,17 @@
     </tr>
     <tr>
       <td>Line thickness:</td>
-      <td><input id="thickness" class="numericalSetting" name="thickness" type="number" min="1" value="2"> pixels</td>
+      <td><input id="lineThickness" class="numericalSetting" name="lineThickness" type="number" min="1" value="2">
+        pixels</td>
     </tr>
     <tr>
-      <td>Line color:</td>
-      <td><input id="color" class="button" name="color" type="color"></td>
+      <td>Wall color:</td>
+      <td><input id="wallColor" class="button" name="wallColor" type="color"></td>
     </tr>
   </table>
-  <button id="generate" class="button bottomButton" name="generate" type="submit" onclick="generate()">Generate</button>
-  <a id="download" class="button bottomButton" href="#" download="maze.png" onclick="downloadMaze()"
+  <button id="generate" class="button" name="generate" type="submit" onclick="generate()">Generate</button>
+  <a id="download" class="button" href="#" download="maze.png" onclick="downloadMaze()"
     style="display: none;">Download</a>
-  <br><br>
   <canvas id="maze"></canvas>
   <script src="maze.js"></script>
 </body>
