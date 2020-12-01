@@ -48,16 +48,14 @@ Grid.prototype.breakWall = function (cell, other, direction, build) {
 
 Grid.prototype.getDrawData = function (cell) { };
 
-Grid.prototype.draw = function (context, sideLength, thickness, wallColor) {
-  canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness * 2;
-  canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness * 2;
+Grid.prototype.draw = function (context, sideLength, thickness, wallColor, backgroundColor) {
+  canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness;
+  canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness;
   context.lineWidth = thickness;
-  context.clearRect(0, 0, canvasElem.width, canvasElem.height);
-  context.fillStyle = "#ffffff"
-  context.beginPath();
-  context.fillRect(0, 0, canvasElem.width, canvasElem.height);
-  context.fill();
   context.strokeStyle = wallColor;
+  context.fillStyle = backgroundColor;
+  context.clearRect(0, 0, canvasElem.width, canvasElem.height);
+  context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   for (let cell of Object.values(this.cells)) {
     let [centerX, centerY, angle] = this.getDrawData(cell, sideLength, thickness);
     const wall2dCount = cell.wallCount - 2;
@@ -92,18 +90,18 @@ DeltaGrid.prototype.createCell = function (x, y, z) {
 
 DeltaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   return [
-    (cell.x + 1) * this.cellWidth + thickness,
-    cell.y * (this.zSize * this.cellHeight + sideLength) + cell.z * this.cellHeight + (cell.isUpward ? 2 : 1) * sideLength / SQRT3 / 2 + thickness,
+    (cell.x + 1) * this.cellWidth + thickness / 2,
+    cell.y * (this.zSize * this.cellHeight + sideLength) + cell.z * this.cellHeight + (cell.isUpward ? 2 : 1) * sideLength / SQRT3 / 2 + thickness / 2,
     cell.isUpward ? Math.PI / 2 : Math.PI / 6
   ];
 };
 
-DeltaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor) {
+DeltaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength / 2;
   this.cellHeight = sideLength * SQRT3 / 2;
   this.xOffset = this.cellWidth;
   this.yOffset = 0;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor);
+  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
 };
 
 function OrthogonalGrid(xSize, ySize, zSize) {
@@ -118,18 +116,18 @@ OrthogonalGrid.prototype.createCell = function (x, y, z) {
 
 OrthogonalGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   return [
-    (cell.x + 0.5) * sideLength + thickness,
-    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + thickness,
+    (cell.x + 0.5) * sideLength + thickness / 2,
+    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + thickness / 2,
     Math.PI / 4
   ];
 };
 
-OrthogonalGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor) {
+OrthogonalGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength;
   this.cellHeight = sideLength;
   this.xOffset = 0;
   this.yOffset = 0;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor);
+  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
 };
 
 function SigmaGrid(xSize, ySize, zSize) {
@@ -144,18 +142,18 @@ SigmaGrid.prototype.createCell = function (x, y, z) {
 
 SigmaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   return [
-    (cell.x + 2 / 3) * this.cellWidth + thickness,
-    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + (cell.isTop ? 0.5 : 1)) * this.cellHeight + thickness,
+    (cell.x + 2 / 3) * this.cellWidth + thickness / 2,
+    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + (cell.isTop ? 0.5 : 1)) * this.cellHeight + thickness / 2,
     0
   ];
 };
 
-SigmaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor) {
+SigmaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength * 1.5;
   this.cellHeight = sideLength * SQRT3;
   this.xOffset = this.cellWidth / 3;
   this.yOffset = this.cellHeight / 2;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor);
+  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
 };
 
 function UpsilonGrid(xSize, ySize, zSize) {
@@ -170,18 +168,18 @@ UpsilonGrid.prototype.createCell = function (x, y, z) {
 
 UpsilonGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   return [
-    (cell.x + 0.5) * this.cellWidth + this.xOffset / 2 + thickness,
-    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + this.yOffset / 2 + thickness,
+    (cell.x + 0.5) * this.cellWidth + this.xOffset / 2 + thickness / 2,
+    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + this.yOffset / 2 + thickness / 2,
     cell instanceof QuadCell ? Math.PI / 4 : Math.PI / 8
   ];
 };
 
-UpsilonGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor) {
+UpsilonGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength + sideLength / Math.SQRT2;
   this.cellHeight = sideLength + sideLength / Math.SQRT2;
   this.xOffset = sideLength / Math.SQRT2;
   this.yOffset = sideLength / Math.SQRT2;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor);
+  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
 };
 
 function ZetaGrid(xSize, ySize, zSize) {
@@ -208,8 +206,8 @@ ZetaGrid.prototype.getNeighbor = function (cell, direction) {
 
 ZetaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   return [
-    (cell.x + 0.5) * this.cellWidth + thickness,
-    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + thickness,
+    (cell.x + 0.5) * this.cellWidth + thickness / 2,
+    cell.y * (this.zSize * this.cellHeight + sideLength) + (cell.z + 0.5) * this.cellHeight + thickness / 2,
     Math.PI / 8
   ];
 };
@@ -220,15 +218,13 @@ ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor
   this.xOffset = 0;
   this.yOffset = 0;
   const context = canvasElem.getContext("2d");
-  canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness * 2;
-  canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness * 2;
+  canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness;
+  canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness;
   context.lineWidth = thickness;
-  context.clearRect(0, 0, canvasElem.width, canvasElem.height);
-  context.fillStyle = "#ffffff"
-  context.beginPath();
-  context.fillRect(0, 0, canvasElem.width, canvasElem.height);
-  context.fill();
   context.strokeStyle = wallColor;
+  context.fillStyle = backgroundColor;
+  context.clearRect(0, 0, canvasElem.width, canvasElem.height);
+  context.fillRect(0, 0, canvasElem.width, canvasElem.height);
   for (let cell of Object.values(this.cells)) {
     let [centerX, centerY, angle] = this.getDrawData(cell, sideLength, thickness);
     const wall2dCount = cell.wallCount - 2;
@@ -821,7 +817,8 @@ function generate() {
     canvasElem,
     Math.max(1, parseInt(document.getElementById("sideLength").value)),
     Math.max(1, parseInt(document.getElementById("lineThickness").value)),
-    document.getElementById("wallColor").value
+    document.getElementById("wallColor").value,
+    document.getElementById("backgroundColor").value
   );
 
   console.log("Draw time: " + (new Date().getTime() - start));
