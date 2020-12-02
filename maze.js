@@ -829,6 +829,7 @@ function algorithmChange() {
   anchorBiasElem.disabled = true;
   cellShapeElem.disabled = false;
   cellShapeElem.options[0].disabled = false;
+  cellShapeElem.options[4].disabled = false;
   horizontalBiasElem.disabled = true;
   indexAnchorElem.disabled = true;
   ySizeElem.disabled = false;
@@ -852,8 +853,12 @@ function algorithmChange() {
       horizontalBiasElem.disabled = false;
       indexAnchorElem.disabled = false;
       ySizeElem.disabled = true;
+      break;
+    case "wilson":
+      cellShapeElem.options[4].disabled = true;
+      break;
   }
-  if (cellShapeElem.disabled || (cellShapeElem.options[0].disabled && cellShapeElem.value == "delta")) {
+  if (cellShapeElem.disabled || (cellShapeElem.options[cellShapeElem.selectedIndex].disabled)) {
     cellShapeElem.value = "orthogonal";
     cellShapeChange();
   }
