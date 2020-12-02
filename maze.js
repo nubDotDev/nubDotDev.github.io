@@ -778,9 +778,9 @@ function wilson(grid) {
 }
 
 function generate() {
-  xSize = Math.max(1, parseInt(xSizeElem.value));
-  ySize = ySizeElem.disabled ? 1 : Math.max(1, parseInt(ySizeElem.value));
-  zSize = Math.max(1, parseInt(zSizeElem.value));
+  const xSize = Math.max(1, parseInt(xSizeElem.value));
+  const ySize = ySizeElem.disabled ? 1 : Math.max(1, parseInt(ySizeElem.value));
+  const zSize = Math.max(1, parseInt(zSizeElem.value));
   horizontalBias = Math.min(1, parseFloat(horizontalBiasElem.value));
   indexAnchor = Math.min(1, parseFloat(indexAnchorElem.value));
   anchorBias = Math.min(1, parseFloat(anchorBiasElem.value));
