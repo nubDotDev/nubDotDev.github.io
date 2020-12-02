@@ -212,7 +212,7 @@ ZetaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor) {
+ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength + 2 * sideLength / Math.SQRT2;
   this.cellHeight = sideLength + 2 * sideLength / Math.SQRT2;
   this.xOffset = 0;
