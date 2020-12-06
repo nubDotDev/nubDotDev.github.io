@@ -2,9 +2,12 @@ const SQRT3 = Math.sqrt(3);
 
 const algorithmElem = document.getElementById("algorithm");
 const cellShapeElem = document.getElementById("cellShape");
+const entriesElem = document.getElementById("entries");
 const xSizeElem = document.getElementById("xSize");
 const ySizeElem = document.getElementById("ySize");
 const zSizeElem = document.getElementById("zSize");
+const useCustomGridElem = document.getElementById("useCustomGrid");
+const customGridElem = document.getElementById("customGrid");
 const horizontalBiasElem = document.getElementById("horizontalBias");
 const indexAnchorElem = document.getElementById("indexAnchor");
 const anchorBiasElem = document.getElementById("anchorBias");
@@ -18,8 +21,6 @@ function Grid(xSize, ySize, zSize, cells = {}) {
   this.zSize = zSize;
   this.cells = cells;
 }
-
-Grid.prototype.createCell = function () { };
 
 Grid.prototype.getCell = function (x, y, z) {
   return this.cells[x + "," + y + "," + z];
@@ -46,11 +47,9 @@ Grid.prototype.breakWall = function (cell, other, direction, build) {
   other.walls[other.getWallByDirection(other.getOpposite(direction))] = !build;
 };
 
-Grid.prototype.getDrawData = function (cell) { };
-
 Grid.prototype.draw = function (context, sideLength, thickness, wallColor, backgroundColor) {
-  canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness;
-  canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness;
+  canvasElem.width = Math.ceil(this.xSize * this.cellWidth + this.xOffset + thickness);
+  canvasElem.height = Math.ceil(this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness);
   context.lineWidth = thickness;
   context.strokeStyle = wallColor;
   context.fillStyle = backgroundColor;
@@ -213,8 +212,8 @@ ZetaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
 };
 
 ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
-  this.cellWidth = sideLength + 2 * sideLength / Math.SQRT2;
-  this.cellHeight = sideLength + 2 * sideLength / Math.SQRT2;
+  this.cellWidth = Math.ceil(sideLength + 2 * sideLength / Math.SQRT2);
+  this.cellHeight = Math.ceil(sideLength + 2 * sideLength / Math.SQRT2);
   this.xOffset = 0;
   this.yOffset = 0;
   const context = canvasElem.getContext("2d");
@@ -236,11 +235,24 @@ ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor
       const sin = Math.sin(angle);
       const direction = cell.getWallDirections().indexOf(i);
       const translation = cell.getTranslation(direction);
-      if (i % 2 == 1 && (this.getNeighbor(cell, direction) || !this.getCell(cell.x + translation[0], cell.y + translation[1], cell.z + translation[2]))) {
-        if (Math.abs(cos) > Math.abs(sin)) {
-          toFunction(centerX + cos * radius, centerY - (sin > 0 ^ cos > 0 ? -1 : 1) * cos * radius);
+      if (i % 2 == 1) {
+        const leftNeighbor = this.getNeighbor(cell, cell.getWallDirections().indexOf((cell.getWallByDirection(direction) + 7) % 8));
+        if (cell.walls[i]) {
+          if (!leftNeighbor) {
+            context.lineTo(centerX + cos * radius + (cos > 0 ? 1 : -1) * sideLength / Math.SQRT2, centerY - sin * radius + (sin > 0 ? -1 : 1) * sideLength / Math.SQRT2);
+          }
         } else {
-          toFunction(centerX + (sin > 0 ^ cos > 0 ? -1 : 1) * sin * radius, centerY - sin * radius);
+          const rightNeighbor = this.getNeighbor(cell, cell.getWallDirections().indexOf((cell.getWallByDirection(direction) + 1) % 8));
+          if (this.getNeighbor(cell, direction) ||
+            (!this.getCell(cell.x + translation[0], cell.y + translation[1], cell.z + translation[2]) &&
+              ((!leftNeighbor || !leftNeighbor.walls[(leftNeighbor.getWallByDirection(direction) + 2) % 8]) ||
+                !rightNeighbor || !rightNeighbor.walls[(rightNeighbor.getWallByDirection(direction) + 6) % 8]))) {
+            if (Math.abs(cos) > Math.abs(sin)) {
+              toFunction(centerX + cos * radius, centerY - (sin > 0 ^ cos > 0 ? -1 : 1) * cos * radius);
+            } else {
+              toFunction(centerX + (sin > 0 ^ cos > 0 ? -1 : 1) * sin * radius, centerY - sin * radius);
+            }
+          }
         }
       }
       angle -= Math.PI * 2 / wall2dCount;
@@ -273,12 +285,41 @@ function createEmptyGrid(xSize, ySize, zSize, cellShape) {
   }
 }
 
-function createFullGrid(xSize, ySize, zSize, cellShape) {
+function createGrid(xSize, ySize, zSize, cellShape, customGrid) {
   const grid = createEmptyGrid(xSize, ySize, zSize, cellShape);
+  if (customGrid) {
+    const coordChecker = math.compile(customGrid);
+    for (let x = 0; x < xSize; x++) {
+      for (let y = 0; y < ySize; y++) {
+        for (let z = 0; z < zSize; z++) {
+          if (coordChecker.evaluate({ w: xSize, h: ySize, l: zSize, x: x, y: y, z: z })) {
+            grid.cells[x + "," + y + "," + z] = grid.createCell(x, y, z);
+          }
+        }
+      }
+    }
+    const cells = Object.values(grid.cells);
+    const queue = [cells[0]];
+    const visited = new Set();
+    while (queue.length > 0) {
+      const current = queue.pop();
+      if (!visited.has(current)) {
+        visited.add(current);
+        for (let [next] of grid.getNeighbors(current)) {
+          queue.push(next);
+        }
+      }
+    }
+    if (visited.size == cells.length) {
+      return grid;
+    }
+  }
   for (let x = 0; x < xSize; x++) {
     for (let y = 0; y < ySize; y++) {
       for (let z = 0; z < zSize; z++) {
-        grid.cells[x + "," + y + "," + z] = grid.createCell(x, y, z);
+        if (!grid.getCell(x, y, z)) {
+          grid.cells[x + "," + y + "," + z] = grid.createCell(x, y, z);
+        }
       }
     }
   }
@@ -628,9 +669,6 @@ function nAryTree(grid) {
   }
 }
 
-nAryTree.getSouthEasterns = function (cell) {
-}
-
 function prim(grid) {
   const cells = Object.values(grid.cells);
   let wallCount = 0;
@@ -777,6 +815,29 @@ function wilson(grid) {
   }
 }
 
+function breakEntries(grid, entries = "corners") {
+  if (entries != "none") {
+    let left, right;
+    if (entries == "corners") {
+      left = grid.getCell(0, 0, 0);
+      right = grid.getCell(grid.xSize - 1, 0, grid.zSize - 1);
+    } else if (entries == "sides") {
+      left = grid.getCell(0, 0, Math.floor(grid.zSize / 2));
+      right = grid.getCell(grid.xSize - 1, 0, Math.floor(grid.zSize / 2));
+    }
+    if (left && right) {
+      if (left instanceof HexCell) {
+        left.walls[3] = true;
+      } else if (left instanceof OctCell) {
+        left.walls[4] = true;
+      } else {
+        left.walls[2] = true;
+      }
+      right.walls[0] = true;
+    }
+  }
+}
+
 function generate() {
   const xSize = Math.max(1, parseInt(xSizeElem.value));
   const ySize = ySizeElem.disabled ? 1 : Math.max(1, parseInt(ySizeElem.value));
@@ -787,28 +848,9 @@ function generate() {
 
   let start = new Date().getTime();
 
-  const grid = createFullGrid(xSize, ySize, zSize, cellShapeElem.value);
+  const grid = createGrid(xSize, ySize, zSize, cellShapeElem.value, useCustomGridElem.checked ? customGridElem.value : undefined);
   eval(algorithmElem.value)(grid);
-
-  const entries = document.getElementById("entries").value;
-  let left, right;
-  if (entries == "corners") {
-    left = grid.getCell(0, 0, 0);
-    right = grid.getCell(xSize - 1, ySize - 1, zSize - 1);
-  } else if (entries == "sides") {
-    left = grid.getCell(0, 0, Math.floor(zSize / 2));
-    right = grid.getCell(xSize - 1, ySize - 1, Math.floor(zSize / 2));
-  }
-  if (left && right) {
-    if (left instanceof HexCell) {
-      left.walls[3] = true;
-    } else if (left instanceof OctCell) {
-      left.walls[4] = true;
-    } else {
-      left.walls[2] = true;
-    }
-    right.walls[0] = true;
-  }
+  breakEntries(grid, entriesElem.value);
 
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
@@ -825,49 +867,75 @@ function generate() {
   document.getElementById("download").style.display = "block";
 }
 
+const elemFlags = {
+  CELL_SHAPE: 1,
+  ALGORITHM: 2,
+  ENTRIES: 4,
+  WIDTH: 8,
+  LENGTH: 16,
+  HEIGHT: 32,
+  CUSTOM_GRID: 64,
+  HORIZONTAL_BIAS: 128,
+  ANCHOR: 256
+};
+
+const cellShapeFlags = {
+  DELTA: 1,
+  ORTHOGONAL: 2,
+  SIGMA: 4,
+  UPSILON: 8,
+  ZETA: 16
+};
+
 function algorithmChange() {
-  anchorBiasElem.disabled = true;
-  cellShapeElem.disabled = false;
-  cellShapeElem.options[0].disabled = false;
-  cellShapeElem.options[4].disabled = false;
-  horizontalBiasElem.disabled = true;
-  indexAnchorElem.disabled = true;
-  ySizeElem.disabled = false;
+  let disableElems = elemFlags.HORIZONTAL_BIAS | elemFlags.ANCHOR;
+  let disableCellShapes = 0;
   switch (algorithmElem.value) {
     case "eller":
     case "sidewinder":
-      cellShapeElem.disabled = true;
-      horizontalBiasElem.disabled = false;
-      ySizeElem.disabled = true;
+      disableElems = elemFlags.CELL_SHAPE | elemFlags.HEIGHT | elemFlags.CUSTOM_GRID | elemFlags.ANCHOR;
       break;
     case "growingTree":
-      anchorBiasElem.disabled = false;
-      indexAnchorElem.disabled = false;
+      disableElems = elemFlags.CUSTOM_GRID | elemFlags.HORIZONTAL_BIAS;
       break;
     case "nAryTree":
-      cellShapeElem.options[0].disabled = true;
+      disableElems = elemFlags.CUSTOM_GRID | elemFlags.HORIZONTAL_BIAS | elemFlags.ANCHOR;
+      disableCellShapes = cellShapeFlags.DELTA;
       break;
     case "recursiveDivision":
-      anchorBiasElem.disabled = false;
-      cellShapeElem.disabled = true;
-      horizontalBiasElem.disabled = false;
-      indexAnchorElem.disabled = false;
-      ySizeElem.disabled = true;
+      disableElems = elemFlags.CELL_SHAPE | elemFlags.HEIGHT | elemFlags.CUSTOM_GRID;
       break;
     case "wilson":
-      cellShapeElem.options[4].disabled = true;
+      disableCellShapes = cellShapeFlags.ZETA;
       break;
+  }
+  cellShapeElem.disabled = disableElems & elemFlags.CELL_SHAPE;
+  algorithmElem.disabled = disableElems & elemFlags.ALGORITHM;
+  entriesElem.disabled = disableElems & elemFlags.ENTRIES;
+  xSizeElem.disabled = disableElems & elemFlags.WIDTH;
+  zSizeElem.disabled = disableElems & elemFlags.LENGTH;
+  ySizeElem.disabled = disableElems & elemFlags.HEIGHT;
+  useCustomGridElem.disabled = disableElems & elemFlags.CUSTOM_GRID;
+  horizontalBiasElem.disabled = disableElems & elemFlags.HORIZONTAL_BIAS;
+  indexAnchorElem.disabled = disableElems & elemFlags.ANCHOR;
+  anchorBiasElem.disabled = disableElems & elemFlags.ANCHOR;
+  for (let i = 0; i < cellShapeElem.options.length; i++) {
+    cellShapeElem.options[i].disabled = disableCellShapes & (2 ** i);
   }
   if (cellShapeElem.disabled || (cellShapeElem.options[cellShapeElem.selectedIndex].disabled)) {
     cellShapeElem.value = "orthogonal";
-    cellShapeChange();
   }
   if (ySizeElem.disabled) {
     ySizeElem.value = 1;
   }
+  if (useCustomGridElem.disabled) {
+    useCustomGridElem.checked = false;
+    useCustomGridChange();
+  }
 }
 
-function cellShapeChange() {
+function useCustomGridChange() {
+  customGridElem.disabled = !useCustomGridElem.checked;
 }
 
 function downloadMaze() {

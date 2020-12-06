@@ -40,6 +40,7 @@
           <li><a href="#wilson">Wilson</a></li>
         </ul>
       </li>
+      <li><a href="#customGrids">Custom Grids</a></li>
     </ul>
   </nav>
 
@@ -289,6 +290,19 @@ While not every cell is in maze
         </pre>
       </li>
     </ul>
+  </div>
+
+  <div id="customGrids">
+    <h2>Custom Grids</h2>
+    <p>If enabled, equations and inequalities can be used to create custom grid shapes. This is accomplished using the
+      <a href="https://mathjs.org/docs/expressions/parsing.html">math.js evaluate function</a>. For every coordinate in
+      the specified dimensions, the equation or inequality will be used to check whether or not to place a cell there.
+      The top left cell on the first floor has coordinates of (0, 0, 0) and coordinates increase going to the right,
+      down, and to the following floors. To represent the width, length, and height of the grid, the variables <i>w</i>,
+      <i>l</i>, and <i>h</i> are used respectively. For the coordinates of the cell being checked, <i>x</i>, <i>y</i>,
+      and <i>z</i> are used. In order for a custom grid to be legal, it must be possible to connect every cell.</p>
+    <p>Example: "x/w <= z/l" would result in a right triangle with legs spanning the left and bottom sides of the grid
+        and its hypotenuse being the diagonal starting from the top left.</p>
   </div>
 </body>
 

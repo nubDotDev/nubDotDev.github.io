@@ -17,7 +17,7 @@
     <tr>
       <td>Cell shape:</td>
       <td>
-        <select id="cellShape" name="cellShape" onchange="cellShapeChange()">
+        <select id="cellShape" name="cellShape">
           <option value="delta">Delta (Triangles)</option>
           <option value="orthogonal" selected>Orthogonal (Squares)</option>
           <option value="sigma">Sigma (Hexagons)</option>
@@ -70,6 +70,13 @@
       <td>Height (3D):</td>
       <td><input id="ySize" class="numericalSetting" name="ySize" type="number" min="1" value="1"> cells</td>
     </tr>
+    <tr>
+      <td>Custom grid:</td>
+      <td>
+        <input id="useCustomGrid" type="checkbox" name="useCustomGrid" onchange="useCustomGridChange()">
+        <input id="customGrid" name="customGrid" value="(x-(w-1)/2)^2 + (z-(w-1)/2)^2 <= (w/2)^2" disabled>
+      </td>
+    </tr>
   </table>
   <hr>
   <b>Biases (0-1 inclusively):</b>
@@ -116,7 +123,8 @@
   <a id="download" class="button" href="#" download="maze.png" onclick="downloadMaze()"
     style="display: none;">Download</a>
   <canvas id="maze"></canvas>
-  <script src="maze.js"></script>
+  <script src="math.js" type="text/javascript"></script>
+  <script src="maze.js" type="text/javascript"></script>
 </body>
 
 </html>
