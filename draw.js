@@ -2,15 +2,20 @@ const thicknessElem = document.getElementById("thickness");
 const colorElem = document.getElementById("color");
 const canvasElem = document.getElementById("canvas");
 const context = canvasElem.getContext("2d");
-const bounds = canvasElem.getBoundingClientRect();
 
 let down = false;
+context.lineCap = "round";
+
+function getMouseCoords(e) {
+  const bounds = canvasElem.getBoundingClientRect();
+  return [e.clientX - bounds.left, e.clientY - bounds.top];
+}
 
 canvasElem.onmousedown = function (e) {
   context.strokeStyle = colorElem.value;
   context.lineWidth = thicknessElem.value;
   context.beginPath();
-  context.moveTo(e.clientX - bounds.left, e.clientY - bounds.top);
+  context.moveTo(...getMouseCoords(e));
   down = true;
 };
 
@@ -21,7 +26,7 @@ document.onmouseup = function (e) {
 
 canvasElem.onmousemove = function (e) {
   if (down) {
-    context.lineTo(e.clientX - bounds.left, e.clientY - bounds.top);
+    context.lineTo(...getMouseCoords(e));
     context.stroke();
   }
 }
