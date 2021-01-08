@@ -12,6 +12,7 @@ const horizontalBiasElem = document.getElementById("horizontalBias");
 const indexAnchorElem = document.getElementById("indexAnchor");
 const anchorBiasElem = document.getElementById("anchorBias");
 const canvasElem = document.getElementById("maze");
+const context = canvasElem.getContext("2d");
 
 let horizontalBias, indexAnchor, anchorBias;
 
@@ -47,9 +48,31 @@ Grid.prototype.breakWall = function (cell, other, direction, build) {
   other.walls[other.getWallByDirection(other.getOpposite(direction))] = !build;
 };
 
-Grid.prototype.draw = function (context, sideLength, thickness, wallColor, backgroundColor) {
+Grid.prototype.getDeadEnds = function () {
+  const deadEnds = [];
+  for (let cell of Object.values(this.cells)) {
+    let deadEnd = -1;
+    for (let i = 0; i < cell.wallCount; i++) {
+      if (cell.walls[i]) {
+        if (deadEnd == -1) {
+          deadEnd = i;
+        } else {
+          deadEnd = -1;
+          break;
+        }
+      }
+    }
+    if (deadEnd != -1) {
+      deadEnds.push([cell, deadEnd]);
+    }
+  }
+  return deadEnds;
+}
+
+Grid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   canvasElem.width = Math.ceil(this.xSize * this.cellWidth + this.xOffset + thickness);
   canvasElem.height = Math.ceil(this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness);
+  context.lineCap = "round";
   context.lineWidth = thickness;
   context.strokeStyle = wallColor;
   context.fillStyle = backgroundColor;
@@ -60,9 +83,9 @@ Grid.prototype.draw = function (context, sideLength, thickness, wallColor, backg
     const wall2dCount = cell.wallCount - 2;
     const radius = sideLength / Math.sin(Math.PI / wall2dCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    for (let i = 0; i < wall2dCount; i++) {
+    for (let i = 0; i <= wall2dCount; i++) {
       angle -= Math.PI * 2 / wall2dCount;
-      const toFunction = (cell.walls[i] ? context.moveTo : context.lineTo).bind(context);
+      const toFunction = (cell.walls[i % (cell.walls.length - 2)] ? context.moveTo : context.lineTo).bind(context);
       toFunction(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
     }
     if (cell.walls[wall2dCount]) {
@@ -95,12 +118,12 @@ DeltaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-DeltaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
+DeltaGrid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength / 2;
   this.cellHeight = sideLength * SQRT3 / 2;
   this.xOffset = this.cellWidth;
   this.yOffset = 0;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
+  Grid.prototype.draw.call(this, sideLength, thickness, wallColor, backgroundColor);
 };
 
 function OrthogonalGrid(xSize, ySize, zSize) {
@@ -121,12 +144,12 @@ OrthogonalGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-OrthogonalGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
+OrthogonalGrid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength;
   this.cellHeight = sideLength;
   this.xOffset = 0;
   this.yOffset = 0;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
+  Grid.prototype.draw.call(this, sideLength, thickness, wallColor, backgroundColor);
 };
 
 function SigmaGrid(xSize, ySize, zSize) {
@@ -147,12 +170,12 @@ SigmaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-SigmaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
+SigmaGrid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength * 1.5;
   this.cellHeight = sideLength * SQRT3;
   this.xOffset = this.cellWidth / 3;
   this.yOffset = this.cellHeight / 2;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
+  Grid.prototype.draw.call(this, sideLength, thickness, wallColor, backgroundColor);
 };
 
 function UpsilonGrid(xSize, ySize, zSize) {
@@ -173,12 +196,12 @@ UpsilonGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-UpsilonGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
+UpsilonGrid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = sideLength + sideLength / Math.SQRT2;
   this.cellHeight = sideLength + sideLength / Math.SQRT2;
   this.xOffset = sideLength / Math.SQRT2;
   this.yOffset = sideLength / Math.SQRT2;
-  Grid.prototype.draw.call(this, canvasElem.getContext("2d"), sideLength, thickness, wallColor, backgroundColor);
+  Grid.prototype.draw.call(this, sideLength, thickness, wallColor, backgroundColor);
 };
 
 function ZetaGrid(xSize, ySize, zSize) {
@@ -211,14 +234,14 @@ ZetaGrid.prototype.getDrawData = function (cell, sideLength, thickness) {
   ];
 };
 
-ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor, backgroundColor) {
+ZetaGrid.prototype.draw = function (sideLength, thickness, wallColor, backgroundColor) {
   this.cellWidth = Math.ceil(sideLength + 2 * sideLength / Math.SQRT2);
   this.cellHeight = Math.ceil(sideLength + 2 * sideLength / Math.SQRT2);
   this.xOffset = 0;
   this.yOffset = 0;
-  const context = canvasElem.getContext("2d");
   canvasElem.width = this.xSize * this.cellWidth + this.xOffset + thickness;
   canvasElem.height = this.ySize * (this.zSize * this.cellHeight + this.yOffset + sideLength) - sideLength + thickness;
+  context.lineCap = "round";
   context.lineWidth = thickness;
   context.strokeStyle = wallColor;
   context.fillStyle = backgroundColor;
@@ -229,8 +252,8 @@ ZetaGrid.prototype.draw = function (canvasElem, sideLength, thickness, wallColor
     const wall2dCount = cell.wallCount - 2;
     const radius = sideLength / Math.sin(Math.PI / wall2dCount) / 2;
     context.moveTo(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius);
-    for (let i = 0; i < wall2dCount; i++) {
-      const toFunction = (cell.walls[i] ? context.moveTo : context.lineTo).bind(context);
+    for (let i = 0; i <= wall2dCount; i++) {
+      const toFunction = (cell.walls[i % (cell.walls.length - 2)] ? context.moveTo : context.lineTo).bind(context);
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       const direction = cell.getWallDirections().indexOf(i);
@@ -854,9 +877,7 @@ function generate() {
 
   console.log("Generation time: " + (new Date().getTime() - start));
   start = new Date().getTime();
-
   grid.draw(
-    canvasElem,
     Math.max(1, parseInt(document.getElementById("sideLength").value)),
     Math.max(1, parseInt(document.getElementById("lineThickness").value)),
     document.getElementById("wallColor").value,
@@ -865,6 +886,7 @@ function generate() {
 
   console.log("Draw time: " + (new Date().getTime() - start));
   document.getElementById("download").style.display = "block";
+  document.getElementById("draw").style.display = "block";
 }
 
 const elemFlags = {
@@ -941,4 +963,18 @@ function useCustomGridChange() {
 function downloadMaze() {
   const image = canvasElem.toDataURL("maze/png");
   document.getElementById("download").href = image;
+}
+
+function openDraw() {
+  var win = window.open("draw.html");
+  loadMaze = function () {
+    const drawCanvas = win.document.getElementById("canvas");
+    const drawContext = drawCanvas.getContext("2d");
+    drawCanvas.width = canvasElem.width;
+    drawCanvas.height = canvasElem.height;
+    drawContext.drawImage(canvasElem, 0, 0);
+    clearInterval(id);
+    win.mazeElem = canvasElem;
+  };
+  var id = setInterval(loadMaze, 100);
 }

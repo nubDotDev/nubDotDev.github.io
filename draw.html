@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.png">
+  <title>Maze Draw</title>
+</head>
+
+<body>
+  <b>Draw settings:</b>
+  <table>
+    <tr>
+      <td>Line thickness:</td>
+      <td><input id="thickness" class="numericalSetting" name="thickness" type="number" min="1" value="2">pixels</td>
+    </tr>
+    <tr>
+      <td>Line color:</td>
+      <td><input id="color" class="button" name="color" type="color"></td>
+    </tr>
+  </table>
+  <button id="clear" class="button" name="clear" onclick="clearCanvas()">Clear</button>
+  <a id="download" class="button" href="#" download="maze.png" onclick="downloadMaze()">Download</a>
+  <canvas id="canvas"></canvas>
+  <script src="draw.js" type="text/javascript"></script>
+</body>
+
+</html>
