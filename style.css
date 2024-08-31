@@ -1,57 +1,31 @@
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+#headshot {
+  width: 2401px;
+  height: 2401px;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  object-position: 65% 50%;
 }
 
-td {
-    padding: 1px 4px;
+.inline-logo {
+  height: 1.5em;
+  display: inline-block;
 }
 
-.numericalSetting {
-    width: 60px;
+a.link {
+  color: inherit;
 }
 
-hr {
-    margin-left: 0;
-    width: 300px;
+a.link:not(:hover) {
+  text-decoration: none;
 }
 
-.button {
-    background-color: lightgray;
-    border: 2px solid gray;
-    border-radius: 4px;
-    color: black;
-    cursor: pointer;
-    display: block;
-    font-size: 16px;
-    outline: none;
-    text-align: center;
-    text-decoration: none;
-    transition: 0.1s;
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none;
+.carousel-item iframe {
+  display: block;
+  margin: auto;
 }
 
-.button:not(input) {
-    margin: 8px 0;
-    padding: 4px 0px;
-}
-
-.button:hover {
-    background-color: #aaaaaa;
-}
-
-.button:focus {
-    box-shadow: 0 0 0 2px black;
-}
-
-#generate, #draw, #clear {
-    width: 300px;
-}
-
-#download {
-    width: 296px;
+.top {
+  position: sticky;
+  top: 3rem;
 }
