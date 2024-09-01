@@ -25,12 +25,12 @@
   <body>
     <div class="container my-5 mx-10">
       <div class="row gx-5">
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-3 text-center">
           <div class="ratio ratio-1x1 m-auto" style="max-width: 400px">
             <img src="headshot.jpg" id="headshot" class="rounded-circle" />
           </div>
           <h1 class="mt-1">Justin Steinman</h1>
-          <p class="text-center">
+          <p>
             <i class="fa fa-envelope pe-2"></i>jsteinman (at) umass.edu<br />
           </p>
         </div>
@@ -61,7 +61,11 @@
               >. While I wish that I could create more videos, the animation
               process takes many hours that I do not have.
             </p>
-            <div id="carouselExample" class="carousel carousel-dark slide">
+            <div
+              id="carouselExample"
+              class="carousel slide m-auto"
+              style="max-width: min-content"
+            >
               <div class="carousel-inner">
                 <div class="carousel-item active">
                   <iframe
@@ -154,21 +158,22 @@
             <p>
               As an avid
               <a href="https://en.wikipedia.org/wiki/Set_(card_game)">SET</a>
-              player, a natural question to ask is what is the maximum number of
-              cards that can be on the table without there being a set? If we
-              treat each of the 81 cards as points in \(\mathbb{F}_3^4\), then
-              the question is equivalent to asking what is maximum order of a
-              subset of points such that no three are colinear (i.e., in
-              arithmetic progression). This is called the cap set problem, and
-              it is surprisingly difficult to answer. In fact, there is no exact
-              solution in dimensions greater than 6. This repository has some of
-              my experiments in generating cap sets. One is a randomized greedy
-              approach, and the other generates all cap sets up to automorphism
-              using an
+              player, it is natural to ask how many cards can be on the table
+              before there has to be a set. If we treat each of the 81 cards as
+              points in \(\mathbb{F}_3^4\), then the question becomes how many
+              points can be taken before 3 of them have to be colinear (i.e., in
+              arithmetic progression). This is the
+              <a href="https://en.wikipedia.org/wiki/Cap_set">cap set problem</a
+              >, and it is surprisingly difficult to answer. In fact, we do not
+              know the exact solution in dimensions greater than 6. This
+              repository has some of my experiments in generating cap sets. One
+              is a randomized greedy approach, and the other generates all cap
+              sets up to automorphism using an
               <a
                 href="https://www.sciencedirect.com/science/article/pii/S0012365X97001672/pdf?md5=b00b9b04e7ea2bf44a6ce462873c33cf&pid=1-s2.0-S0012365X97001672-main.pdf"
                 >orderly algorithm</a
-              >.
+              >. With this, I managed to prove that there are no complete cap
+              sets in 4 dimensions of size 19.
             </p>
             <h4>
               Old Sweepy &mdash; Minesweeper Solver<a
@@ -194,9 +199,10 @@
             <p>
               This website is a big reason for my love of algorithms today. I
               made it at the end of highschool, and it was my first real
-              exposure to graph theory. I was blown away at how many ways there
+              exposure to graph theory. I was blown away by how many ways there
               are to generate a maze. I strongly recommend this as a project for
-              anyone who wants a fun and intuitive introduction to graph theory.
+              anyone who wants a fun and intuitive introduction to graph
+              algorithms.
             </p>
             <h4>
               Grade Calculator<a href="grade-calculator/index.html"
