@@ -23,6 +23,30 @@
   </head>
 
   <body>
+    <!-- <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#publications">Publications</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#youtube">YouTube</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#math-club">Math Club</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#projects">Projects</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav> -->
+
     <div class="container my-5 mx-10">
       <div class="row gx-5">
         <div class="col-12 col-md-3 text-center">
@@ -40,7 +64,7 @@
           </p>
         </div>
         <div class="col-12 col-md-7">
-          <div>
+          <div id="home">
             <h2>Hey, I'm Justin!</h2>
             <p>
               I am a fourth-year undergraduate majoring in pure math and
@@ -49,7 +73,35 @@
             </p>
           </div>
 
-          <div class="mt-5">
+          <div id="publications" class="mt-5">
+            <h3>Publications</h3>
+            <h4>
+              Support Graph Preconditioners for Off-Lattice Cell-Based Models
+            </h4>
+            <p>To be published on Arxiv imminently, 2024</p>
+            <p>
+              <strong>Abstract:</strong>
+              Off-lattice agent-based models (or cell-based models) of
+              multicellular systems are increasingly used to create in-silico
+              models of in-vitro and in-vivo experimental setups of cells and
+              tissues, including cancer spheroids, neural crest cell migration
+              and liver lobules. Robust and efficient numerical methods are
+              required for these applications which simulate thousands to
+              millions of degrees of freedom. At their core these models require
+              the solution of a large friction dominated equation of motion. The
+              resulting sparse, symmetric and positive-definite matrix problem
+              is solved using the conjugate gradient. This requires a good
+              preconditioner. Here we develop a graph based preconditioning
+              strategy that can be easily implemented in such cell-based models.
+              Core to our development is the extension of support graph
+              preconditioners to block structured matrices. We find that not
+              only does this preconditioner improve convergence speed (measured
+              in iteration count), but also makes the implementation of robust
+              stopping criteria easier.
+            </p>
+          </div>
+
+          <div id="youtube" class="mt-5">
             <h3>YouTube Channel &mdash; nubDotDev</h3>
             <p>
               One of my passions is math and computer science exposition, and I
@@ -136,7 +188,7 @@
             </div>
           </div>
 
-          <div class="mt-5">
+          <div id="math-club" class="mt-5">
             <h3>Math Club</h3>
             <p>
               I am the founder and president of the UMass Recreational Math Club
@@ -152,7 +204,7 @@
             </p>
           </div>
 
-          <div class="mt-5">
+          <div id="projects" class="mt-5">
             <h3>Projects</h3>
             <h4>
               Cap Sets in Finite Affine Space<a
