@@ -25,7 +25,7 @@ a.link:not(:hover) {
   margin: auto;
 }
 
-.top {
-  position: sticky;
-  top: 3rem;
+.div-pad-top {
+  padding-top: 4rem;
+  margin-top: -1rem;
 }
