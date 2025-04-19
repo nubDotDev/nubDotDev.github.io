@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Transit105';
+  src: url('Transit105/Transit105.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 #headshot {
   width: 2401px;
   height: 2401px;
