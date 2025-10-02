@@ -1,9 +1,3 @@
-[submodule "grade-calculator"]
-	path = grade-calculator
-	url = https://github.com/nubDotDev/grade-calculator.git
-[submodule "maze-generator"]
-	path = maze-generator
-	url = https://github.com/nubDotDev/maze-generator.git
 [submodule "Transit105"]
 	path = Transit105
 	url = https://github.com/nubDotDev/Transit105/
