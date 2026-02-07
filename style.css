@@ -19,11 +19,11 @@
   display: inline-block;
 }
 
-a.link {
-  color: inherit;
+a {
+  color: #3A6E9D;
 }
 
-a.link:not(:hover) {
+a:not(:hover) {
   text-decoration: none;
 }
 
